@@ -3,11 +3,9 @@
 @tailwind utilities;
 
 @layer utilities {
-  @variants dark {
-    .bg-dark {
-      background: #070c17db;
-      backdrop-filter: blur(3px);
-    }
+  .custom-class {
+    @apply hover:/*class*/ focus:/*class*/;
+    /* Các thuộc tính CSS khác */
   }
 }
 
