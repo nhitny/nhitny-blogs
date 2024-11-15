@@ -2,7 +2,7 @@
   "name": "bits-of-code",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://tnynhi.github.io/nhitnyBlog.github.io/",
+  "homepage": "https://nhitny.github.io/nhitny-blogs/",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
