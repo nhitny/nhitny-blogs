@@ -13,7 +13,7 @@ export default function AdminLogin() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push("/admin");  // Redirect to admin page if login is successful
+      router.push("/admin/dashboard");  // Redirect to admin page if login is successful
     } catch (error) {
       setError("Đăng nhập thất bại. Vui lòng thử lại.");
       console.error(error);

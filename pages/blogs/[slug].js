@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { db } from "../../firebase/firebaseConfig";
+import { db } from "@/firebase/firebaseConfig";
 import { collection, getDocs, query, where, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function BlogDetail() {
@@ -63,8 +63,8 @@ export default function BlogDetail() {
 
       {/* Nút Like */}
       <div>
-        <button 
-          onClick={() => alert("Like clicked")} 
+        <button
+          onClick={() => alert("Like clicked")}
           className="p-2 bg-blue-500 text-white rounded mb-4"
         >
           {likes} Lượt thích
@@ -93,7 +93,7 @@ export default function BlogDetail() {
             placeholder="Viết bình luận..."
             className="w-full p-2 border rounded"
           ></textarea>
-          <button 
+          <button
             className="mt-2 p-2 bg-blue-600 text-white"
           >
             Gửi bình luận
