@@ -23,7 +23,7 @@ function about({ topics }) {
                 <h2 className="text-3xl font-semibold text-gray-700 py-4 dark:text-gray-200">
                     Hi,{" "}
                     <span className="bg-indigo-400 text-white rounded px-1 dark:bg-indigo-500">
-                        I’m Soumyajit
+                        I&apos;m Soumyajit
                     </span>{" "}
                     . Nice to meet you.
                 </h2>
