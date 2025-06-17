@@ -65,3 +65,18 @@
 // }
 
 // export default about;
+
+
+function About(props) {
+    return (
+        <div>
+            <h1>About</h1>
+            {/* Render topics nếu có */}
+            {props.topics && props.topics.map(topic => (
+                <p key={topic.id}>{topic.name}</p>
+            ))}
+        </div>
+    );
+}
+
+export default About;
