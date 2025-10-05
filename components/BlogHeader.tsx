@@ -1,12 +1,24 @@
+
+use client;
 import Link from "next/link";
 
-export default function BlogHeader({ data }) {
+interface BlogHeaderProps {
+  data: {
+    slug?: string;
+    tags?: string[] | string;
+    thumbnail?: string;
+    title: string;
+    description?: string;
+  };
+}
+
+export default function BlogHeader({ data }: BlogHeaderProps) {
   const slug = data?.slug || "no-slug";
 
-  let tags = [];
+  let tags: string[] = [];
   if (Array.isArray(data.tags)) {
     try {
-      tags = JSON.parse(data.tags[0]);
+      tags = typeof data.tags[0] === "string" ? JSON.parse(data.tags[0]) : [];
     } catch (e) {
       console.error("Failed to parse tags:", data.tags);
     }
