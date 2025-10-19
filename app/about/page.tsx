@@ -1,12 +1,20 @@
-use client;
+
+"use client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { FaLaptop, FaTwitter } from "react-icons/fa";
 import { getAllTopics } from "@/Lib/Data";
 
 export default async function AboutPage() {
-  const topics = getAllTopics();
+  const topics = await getAllTopics();
 
+  return <AboutPageClient topics={topics} />;
+}
+
+// Thêm khai báo "use client" để chỉ định đây là Client Component
+"use client";
+
+function AboutPageClient({ topics }: { topics: any }) {
   return (
     <div className="min-h-screen relative bg-white dark:bg-gray-900">
       <Navbar topics={topics} />

@@ -1,15 +1,16 @@
 import "@/styles/globals.css";
-import { ThemeProvider } from "next-themes";
-import { Provider } from "react-redux";
-import { store } from "@/Redux/store";
-import { ReactNode } from "react";
+import ClientProviders from "./ClientProviders";
+import { Inter } from "next/font/google";
+import type { ReactNode } from "react";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <Provider store={store}>
-      <ThemeProvider attribute="class">
-        {children}
-      </ThemeProvider>
-    </Provider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} bg-gray-950 text-gray-100`}>
+        <ClientProviders>{children}</ClientProviders>
+      </body>
+    </html>
   );
 }
