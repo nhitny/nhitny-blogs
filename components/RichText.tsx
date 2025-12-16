@@ -15,16 +15,57 @@ type Props = {
 
 export default function RichText({ value, onChange, placeholder, onReady }: Props) {
   const isComposing = useRef(false);
+  const iconsRegistered = useRef(false);
+
+  // Register custom icons BEFORE Quill initializes
+  useEffect(() => {
+    if (typeof window === 'undefined' || iconsRegistered.current) return;
+
+    const registerIcons = async () => {
+      try {
+        const Quill = (await import('quill')).default;
+        const icons: any = Quill.import('ui/icons');
+        icons['inline-math'] = '<span style="font-size: 18px;">📐</span>';
+        icons['block-math'] = '<span style="font-size: 18px;">📊</span>';
+        iconsRegistered.current = true;
+      } catch (e) {
+        console.error('Failed to register icons:', e);
+      }
+    };
+
+    registerIcons();
+  }, []);
 
   const modules = {
-    toolbar: [
-      [{ header: [2, 3, false] }],
-      ["bold", "italic", "underline", "blockquote"],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["link", "image", "code-block"],
-      [{ align: [] }],
-      ["clean"],
-    ],
+    toolbar: {
+      container: [
+        [{ header: [2, 3, false] }],
+        ["bold", "italic", "underline", "blockquote"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        ["link", "image", "code-block"],
+        [{ align: [] }],
+        ["inline-math", "block-math"], // Custom buttons
+        ["clean"],
+      ],
+      handlers: {
+        "inline-math": function (this: any) {
+          const quill = this.quill;
+          const range = quill.getSelection();
+          if (range) {
+            quill.insertText(range.index, "$$", "user");
+            quill.setSelection(range.index + 1, 0);
+          }
+        },
+        "block-math": function (this: any) {
+          const quill = this.quill;
+          const range = quill.getSelection();
+          if (range) {
+            quill.insertText(range.index, "\n$$\n\n$$\n", "user");
+            quill.setSelection(range.index + 4, 0);
+          }
+        },
+      },
+    },
   };
 
   const { quill, quillRef } = useQuill({ modules, placeholder });

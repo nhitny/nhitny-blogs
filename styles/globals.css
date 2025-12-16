@@ -61,6 +61,15 @@ a {
   @apply prose-invert max-w-none;
 }
 
+/* Thanh phân cách mờ giữa các section */
+.prose h2 {
+  @apply pt-8 mt-8 border-t border-gray-200 dark:border-gray-700;
+}
+
+.prose h2:first-of-type {
+  @apply border-t-0 mt-0 pt-0;
+}
+
 /* ===========================
    🔥 QUILL EDITOR FIX BIDI 🔥
    =========================== */
@@ -79,6 +88,68 @@ a {
 .ql-container {
   font-family: inherit;
   font-size: 1rem;
+}
+
+/* Sticky toolbar */
+.ql-toolbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  background-color: white !important;
+  border-bottom: 1px solid #ccc !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Code block styling */
+.ql-editor pre.ql-syntax {
+  background-color: #2d2d2d !important;
+  color: #f8f8f2 !important;
+  padding: 16px !important;
+  border-radius: 6px !important;
+  border: 2px solid #444 !important;
+  font-family: 'Courier New', monospace !important;
+  font-size: 14px !important;
+  overflow-x: auto !important;
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  margin: 16px 0 !important;
+  min-height: 60px !important;
+}
+
+.dark .ql-editor pre.ql-syntax {
+  background-color: #1a1a1a !important;
+  border-color: #555 !important;
+}
+
+/* Highlight formulas in editor - add visual indicator for $ symbols */
+.ql-editor p,
+.ql-editor span,
+.ql-editor div {
+  /* Scan for $ in text and add subtle background */
+}
+
+/* Make $ symbols more visible in editor */
+.ql-editor::after {
+  content: "";
+  display: block;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(139, 92, 246, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: monospace;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Show hint when typing $ */
+.ql-editor:focus::after {
+  content: "💡 Tip: Dùng $...$ cho công thức inline, $$...$$ cho công thức block";
+  opacity: 1;
 }
 
 /* Dark Mode support for Quill */

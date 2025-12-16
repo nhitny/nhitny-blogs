@@ -86,6 +86,119 @@ export default function BlogSlugPage({
     })();
   }, [slug]);
 
+  // Render KaTeX formulas after content is loaded
+  useEffect(() => {
+    if (!contentHtml) return;
+
+    // Dynamically import and render KaTeX
+    import('katex').then((katex) => {
+      const article = document.querySelector('article.prose');
+      if (!article) return;
+
+      // Method 1: Find code blocks with LaTeX
+      const codeBlocks = article.querySelectorAll('pre');
+      codeBlocks.forEach((pre) => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        const text = code.textContent || '';
+
+        // Check if it's a LaTeX formula
+        if (text.trim().startsWith('$$') && text.trim().endsWith('$$')) {
+          const latex = text.trim().slice(2, -2).trim();
+          const container = document.createElement('div');
+          container.className = 'katex-display my-4';
+
+          try {
+            katex.default.render(latex, container, {
+              throwOnError: false,
+              displayMode: true,
+            });
+            pre.replaceWith(container);
+          } catch (e) {
+            console.error('KaTeX render error:', e);
+          }
+        } else if (text.trim().startsWith('$') && text.trim().endsWith('$') && !text.trim().startsWith('$$')) {
+          const latex = text.trim().slice(1, -1).trim();
+          const container = document.createElement('span');
+          container.className = 'katex-inline';
+
+          try {
+            katex.default.render(latex, container, {
+              throwOnError: false,
+              displayMode: false,
+            });
+            pre.replaceWith(container);
+          } catch (e) {
+            console.error('KaTeX render error:', e);
+          }
+        }
+      });
+
+      // Method 2: Find LaTeX in text nodes (for direct typing)
+      const walker = document.createTreeWalker(
+        article,
+        NodeFilter.SHOW_TEXT,
+        null
+      );
+
+      const textNodes: Text[] = [];
+      let node;
+      while ((node = walker.nextNode())) {
+        textNodes.push(node as Text);
+      }
+
+      textNodes.forEach((textNode) => {
+        const text = textNode.textContent || '';
+
+        // Match display math: $$...$$
+        const displayRegex = /\$\$([^$]+)\$\$/g;
+        // Match inline math: $...$
+        const inlineRegex = /\$([^$]+)\$/g;
+
+        if (displayRegex.test(text) || inlineRegex.test(text)) {
+          const span = document.createElement('span');
+          let html = text;
+
+          // Replace display math
+          html = html.replace(/\$\$([^$]+)\$\$/g, (match, latex) => {
+            const container = document.createElement('div');
+            container.className = 'katex-display my-4';
+            try {
+              katex.default.render(latex.trim(), container, {
+                throwOnError: false,
+                displayMode: true,
+              });
+              return container.outerHTML;
+            } catch (e) {
+              console.error('KaTeX error:', e);
+              return match;
+            }
+          });
+
+          // Replace inline math
+          html = html.replace(/\$([^$]+)\$/g, (match, latex) => {
+            const container = document.createElement('span');
+            container.className = 'katex-inline';
+            try {
+              katex.default.render(latex.trim(), container, {
+                throwOnError: false,
+                displayMode: false,
+              });
+              return container.outerHTML;
+            } catch (e) {
+              console.error('KaTeX error:', e);
+              return match;
+            }
+          });
+
+          span.innerHTML = html;
+          textNode.replaceWith(span);
+        }
+      });
+    });
+  }, [contentHtml]);
+
   // Chuẩn hoá tags: chấp nhận array hoặc string (cách nhau bởi , hoặc space)
   const tags: string[] = useMemo(() => {
     if (!post?.tags) return post?.topic ? [post.topic] : [];
@@ -100,9 +213,16 @@ export default function BlogSlugPage({
 
   return (
     <div className="mx-auto max-w-7xl px-6 pt-8 pb-24">
-      {/* Lưới 2 cột: nội dung + TOC */}
+      {/* Lưới 2 cột: TOC trái + nội dung phải */}
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
-        {/* Nội dung trái */}
+        {/* TOC trái */}
+        <aside className="lg:col-span-4">
+          <div className="sticky top-24">
+            <Toc headings={headings} />
+          </div>
+        </aside>
+
+        {/* Nội dung phải */}
         <div className="lg:col-span-8">
           {/* Ảnh header */}
           {post.headerImage && (
@@ -142,7 +262,7 @@ export default function BlogSlugPage({
               : post.date}
           </p>
 
-          {/* Dấu chấm giống “...” */}
+          {/* Dấu chấm giống "..." */}
           <div className="mb-6 text-center text-3xl text-gray-400 dark:text-gray-600">• • •</div>
 
           {/* Nội dung bài viết */}
@@ -161,13 +281,6 @@ export default function BlogSlugPage({
             <Comments postId={slug} />
           </div>
         </div>
-
-        {/* TOC phải */}
-        <aside className="lg:col-span-4">
-          <div className="toc sticky top-24 ml-auto max-w-sm">
-            <Toc headings={headings} />
-          </div>
-        </aside>
       </div>
     </div>
   );
