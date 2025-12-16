@@ -25,26 +25,26 @@ export default function BlogHeader({ data }: { data: BlogData }) {
       .replace(/[^a-z0-9 ]/g, "").trim().replace(/\s+/g, "-");
 
   return (
-    <article className="group relative flex h-full flex-col justify-between rounded-2xl bg-[#121826] p-6 shadow-sm ring-1 ring-gray-800/80 transition hover:-translate-y-0.5 hover:shadow-[0_2px_20px_rgba(0,0,0,0.25)]">
+    <article className="group relative flex h-full flex-col justify-between rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 transition hover:-translate-y-0.5 hover:shadow-lg dark:bg-[#121826] dark:ring-gray-800/80 dark:hover:shadow-[0_2px_20px_rgba(0,0,0,0.25)]">
       {data.topic && (
-        <span className="inline-block rounded-full bg-[#6C63FF]/20 px-3 py-1 text-[11px] font-semibold tracking-wider text-[#B6B4FF]">
+        <span className="inline-block rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold tracking-wider text-indigo-600 dark:bg-[#6C63FF]/20 dark:text-[#B6B4FF]">
           {data.topic}
         </span>
       )}
-      <h3 className="mt-4 text-[22px] font-bold leading-snug text-gray-100 group-hover:text-indigo-300">
+      <h3 className="mt-4 text-[22px] font-bold leading-snug text-gray-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-300">
         <Link href={`/blogs/${slug}`} className="no-underline">
           {data.title}
         </Link>
       </h3>
-      <p className="mt-2 text-[14px] leading-6 text-gray-400 line-clamp-3">
+      <p className="mt-2 text-[14px] leading-6 text-gray-600 line-clamp-3 dark:text-gray-400">
         {data.description || "No description."}
       </p>
       <div className="mt-6">
         <div className="flex items-center justify-between">
-          <Link href={`/blogs/${slug}`} className="inline-flex items-center gap-2 text-[14px] font-medium text-indigo-300 hover:text-indigo-200 no-underline">
+          <Link href={`/blogs/${slug}`} className="inline-flex items-center gap-2 text-[14px] font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-300 dark:hover:text-indigo-200 no-underline">
             Learn More <span aria-hidden>→</span>
           </Link>
-          <span className="text-[12px] tracking-[0.18em] text-gray-400">
+          <span className="text-[12px] tracking-[0.18em] text-gray-500 dark:text-gray-400">
             {minutesRead(data.content)}
           </span>
         </div>

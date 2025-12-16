@@ -53,23 +53,34 @@ export default function BlogSlugPage({
   useEffect(() => {
     if (!slug) return;
     (async () => {
-      // Lấy bài viết public theo slug
-      const q = query(
-        collection(db, "posts"),
-        where("slug", "==", slug),
-        where("isPublished", "==", true)
-      );
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        const data = snap.docs[0].data();
-        setPost(data);
+      try {
+        // Fetch by slug first, then check publish rules client-side
+        // This avoids complex OR rules in Firestore indexes for single document lookup
+        const q = query(
+          collection(db, "posts"),
+          where("slug", "==", slug)
+        );
+        const snap = await getDocs(q);
 
-        // Inject id cho h2/h3 để TOC
-        // (thực hiện ở client vì dùng DOM)
-        const { html, headings } = addHeadingIds(data.content || "");
-        setContentHtml(html);
-        setHeadings(headings);
-      } else {
+        if (!snap.empty) {
+          const data = snap.docs[0].data();
+          const now = new Date();
+          const isPublished = data.isPublished;
+          const isScheduledPassed = data.scheduledAt && data.scheduledAt.toDate() <= now;
+
+          if (isPublished || isScheduledPassed) {
+            setPost(data);
+
+            // Inject id cho h2/h3 để TOC
+            const { html, headings } = addHeadingIds(data.content || "");
+            setContentHtml(html);
+            setHeadings(headings);
+            return;
+          }
+        }
+        setPost(null); // Not found or not published/scheduled yet
+      } catch (err) {
+        console.error("Error fetching post:", err);
         setPost(null);
       }
     })();
@@ -117,13 +128,13 @@ export default function BlogSlugPage({
           )}
 
           {/* Tiêu đề */}
-          <h1 className="mb-2 text-3xl font-extrabold text-gray-100 sm:text-4xl">
+          <h1 className="mb-2 text-3xl font-extrabold text-gray-900 sm:text-4xl dark:text-gray-100">
             {post.title}
           </h1>
 
           {/* Tóm tắt / mô tả + ngày */}
           {post.description && (
-            <p className="mb-3 text-gray-400">{post.description}</p>
+            <p className="mb-3 text-gray-600 dark:text-gray-400">{post.description}</p>
           )}
           <p className="mb-8 text-sm text-gray-500">
             {post.date?.toDate?.()
@@ -132,11 +143,11 @@ export default function BlogSlugPage({
           </p>
 
           {/* Dấu chấm giống “...” */}
-          <div className="mb-6 text-center text-3xl">• • •</div>
+          <div className="mb-6 text-center text-3xl text-gray-400 dark:text-gray-600">• • •</div>
 
           {/* Nội dung bài viết */}
           <article
-            className="prose max-w-none dark:prose-invert lg:prose-lg"
+            className="prose max-w-none text-gray-800 dark:prose-invert dark:text-gray-300 lg:prose-lg"
             dangerouslySetInnerHTML={{ __html: contentHtml || post.content }}
           />
 

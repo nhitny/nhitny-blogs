@@ -1,10 +1,8 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 // import { getAuth } from "firebase/auth"; // Import getAuth đúng cách
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getStorage } from "firebase/storage";
-
-
 
 const firebaseConfig = {
     apiKey: "AIzaSyCvj6bfGaCC0JMzNvSCXYvuzYNlqtLmU88",
@@ -16,7 +14,8 @@ const firebaseConfig = {
     measurementId: "G-YLXXTXNBZ1"
 };
 
-const app = initializeApp(firebaseConfig);
+// Singleton pattern for Next.js to avoid multiple init warnings
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const provider = new GoogleAuthProvider();
 const auth = getAuth(app);
 
@@ -26,4 +25,4 @@ const storage = getStorage(app);
 
 
 
-export { db, auth , provider, storage};
+export { db, auth, provider, storage };

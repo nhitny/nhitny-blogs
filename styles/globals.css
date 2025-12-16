@@ -9,19 +9,99 @@
   }
 }
 
-html { scroll-behavior: smooth; }
-textarea::-webkit-scrollbar { width: 0; }
+html {
+  scroll-behavior: smooth;
+}
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #6264f3 !important; border-radius: 5px !important; }
+textarea::-webkit-scrollbar {
+  width: 0;
+}
 
-button:focus { outline: 0 !important; }
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-@media (max-width: 1180px) { .toc { display: none; } }
-.toc-inner { max-height: calc(100vh - 25vh); }
-.dropdown:hover .dropdown-menu { display: block; }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-body { @apply bg-gray-950 text-gray-100 antialiased; }
-a { @apply no-underline; }
-.prose { @apply prose-invert max-w-none; }
+::-webkit-scrollbar-thumb {
+  background: #6264f3 !important;
+  border-radius: 5px !important;
+}
+
+button:focus {
+  outline: 0 !important;
+}
+
+@media (max-width: 1180px) {
+  .toc {
+    display: none;
+  }
+}
+
+.toc-inner {
+  max-height: calc(100vh - 25vh);
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+body {
+  @apply bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased transition-colors duration-300;
+}
+
+a {
+  @apply no-underline;
+}
+
+.prose {
+  @apply prose-invert max-w-none;
+}
+
+/* ===========================
+   🔥 QUILL EDITOR FIX BIDI 🔥
+   =========================== */
+
+.ql-editor {
+  min-height: 400px !important;
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+.ql-editor * {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+.ql-container {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+/* Dark Mode support for Quill */
+.dark .ql-toolbar {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+.dark .ql-container {
+  border-color: #4b5563;
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+/* Fix SVG icons in toolbar for dark mode */
+.dark .ql-stroke {
+  stroke: #e5e7eb !important;
+}
+
+.dark .ql-fill {
+  fill: #e5e7eb !important;
+}
+
+.dark .ql-picker {
+  color: #e5e7eb !important;
+}

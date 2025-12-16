@@ -10,6 +10,7 @@ import {
   addDoc, collection, doc, getDoc, serverTimestamp, Timestamp,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const RichText = dynamic(() => import("@/components/RichText"), {
   ssr: false,
@@ -120,136 +121,141 @@ export default function NewPostPage() {
     router.replace("/admin/dashboard");
   };
 
-  if (checkingAuth) {
-    return <div className="p-6 text-center text-gray-400">Đang kiểm tra quyền…</div>;
-  }
-
   return (
     <div className="mx-auto max-w-5xl p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <Link href="/admin/dashboard" className="text-indigo-400 hover:underline">
-          ← Back to Dashboard
-        </Link>
-        <Link href="/blogs" className="text-indigo-400 hover:underline">
-          ← Back to Blog
-        </Link>
-      </div>
-
-      <h1 className="mb-6 text-3xl font-bold">📝 Soạn bài viết mới</h1>
-
-      <form onSubmit={handleSubmit} className="space-y-4 rounded border border-gray-700 p-4">
-        <input
-          className="w-full rounded border border-gray-600 bg-gray-900 p-2"
-          placeholder="Tiêu đề"
-          value={form.title}
-          onChange={(e) => setForm(s => ({ ...s, title: e.target.value, slug: slugify(e.target.value) }))}
-          required
-        />
-
-        <input
-          className="w-full rounded border border-gray-600 bg-gray-900 p-2"
-          placeholder="Slug"
-          value={form.slug}
-          onChange={(e) => setForm(s => ({ ...s, slug: slugify(e.target.value) }))}
-        />
-
-        <input
-          className="w-full rounded border border-gray-600 bg-gray-900 p-2"
-          placeholder="Mô tả ngắn"
-          value={form.description}
-          onChange={(e) => setForm(s => ({ ...s, description: e.target.value }))}
-        />
-
-        <div className="flex gap-2">
-          <input
-            className="w-full rounded border border-gray-600 bg-gray-900 p-2"
-            placeholder="Header Image URL"
-            value={form.headerImage}
-            onChange={(e) => setForm(s => ({ ...s, headerImage: e.target.value }))}
-          />
-          <button
-            type="button"
-            className="rounded bg-slate-700 px-3 text-sm"
-            onClick={() => headerInputRef.current?.click()}
-          >
-            Upload…
-          </button>
-          <input
-            ref={headerInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={async (e) => {
-              const f = e.target.files?.[0];
-              if (!f) return;
-              const url = await uploadImage(f);
-              setForm(s => ({ ...s, headerImage: url }));
-            }}
-          />
-        </div>
-
-        <input
-          className="w-full rounded border border-gray-600 bg-gray-900 p-2"
-          placeholder="Tags (phân cách bằng dấu phẩy)"
-          value={tagsText}
-          onChange={(e) =>
-            setForm(s => ({
-              ...s,
-              tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean),
-            }))
-          }
-        />
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="rounded bg-slate-700 px-3 py-1 text-sm"
-            onClick={() => inlineImageInputRef.current?.click()}
-          >
-            Chèn ảnh vào nội dung…
-          </button>
-          <input
-            ref={inlineImageInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => insertImage(e.target.files?.[0])}
-          />
-        </div>
-
-        <RichText
-          value={form.content}
-          onChange={(html) => setForm(s => ({ ...s, content: html }))}
-          placeholder="Viết nội dung (Heading 2/3 giúp TOC hiển thị đẹp)…"
-          onReady={(q) => setEditorQuill(q)}
-        />
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={form.isPublished}
-              onChange={(e) => setForm(s => ({ ...s, isPublished: e.target.checked }))}
-            />
-            Publish ngay?
-          </label>
-
-          <div className="sm:col-span-2">
-            <label className="block text-sm mb-1">Hoặc lên lịch đăng</label>
-            <input
-              type="datetime-local"
-              className="w-full rounded border border-gray-600 bg-gray-900 p-2"
-              value={form.scheduledAt}
-              onChange={(e) => setForm(s => ({ ...s, scheduledAt: e.target.value }))}
-            />
-            <p className="mt-1 text-xs text-gray-400">
-              Nếu chọn thời gian, bài sẽ tự public khi đến giờ (nhờ Firestore Rules).
-            </p>
+      {checkingAuth ? (
+        <div className="p-10 text-center text-gray-400">Đang kiểm tra quyền…</div>
+      ) : (
+        <>
+          <div className="mb-6 flex items-center justify-between">
+            <Link href="/admin/dashboard" className="text-indigo-400 hover:underline">
+              ← Back to Dashboard
+            </Link>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <Link href="/blogs" className="text-indigo-400 hover:underline">
+                ← Back to Blog
+              </Link>
+            </div>
           </div>
-        </div>
 
-        <button className="rounded bg-indigo-600 px-4 py-2 font-semibold text-white">Tạo bài</button>
-      </form>
+          <h1 className="mb-6 text-3xl font-bold text-gray-900 dark:text-gray-100">📝 Soạn bài viết mới</h1>
+
+          <form onSubmit={handleSubmit} className="space-y-4 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900/50">
+            <input
+              className="w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+              placeholder="Tiêu đề"
+              value={form.title}
+              onChange={(e) => setForm(s => ({ ...s, title: e.target.value, slug: slugify(e.target.value) }))}
+              required
+            />
+
+            <input
+              className="w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+              placeholder="Slug"
+              value={form.slug}
+              onChange={(e) => setForm(s => ({ ...s, slug: slugify(e.target.value) }))}
+            />
+
+            <input
+              className="w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+              placeholder="Mô tả ngắn"
+              value={form.description}
+              onChange={(e) => setForm(s => ({ ...s, description: e.target.value }))}
+            />
+
+            <div className="flex gap-2">
+              <input
+                className="w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                placeholder="Header Image URL"
+                value={form.headerImage}
+                onChange={(e) => setForm(s => ({ ...s, headerImage: e.target.value }))}
+              />
+              <button
+                type="button"
+                className="rounded bg-gray-200 px-3 text-sm text-gray-700 hover:bg-gray-300 dark:bg-slate-700 dark:text-gray-100 dark:hover:bg-slate-600"
+                onClick={() => headerInputRef.current?.click()}
+              >
+                Upload…
+              </button>
+              <input
+                ref={headerInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  const url = await uploadImage(f);
+                  setForm(s => ({ ...s, headerImage: url }));
+                }}
+              />
+            </div>
+
+            <input
+              className="w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+              placeholder="Tags (phân cách bằng dấu phẩy)"
+              value={tagsText}
+              onChange={(e) =>
+                setForm(s => ({
+                  ...s,
+                  tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean),
+                }))
+              }
+            />
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="rounded bg-gray-200 px-3 py-1 text-sm text-gray-700 hover:bg-gray-300 dark:bg-slate-700 dark:text-gray-100 dark:hover:bg-slate-600"
+                onClick={() => inlineImageInputRef.current?.click()}
+              >
+                Chèn ảnh vào nội dung…
+              </button>
+              <input
+                ref={inlineImageInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => insertImage(e.target.files?.[0])}
+              />
+            </div>
+
+            <RichText
+              value={form.content}
+              onChange={(html) => setForm(s => ({ ...s, content: html }))}
+              placeholder="Viết nội dung (Heading 2/3 giúp TOC hiển thị đẹp)…"
+              onReady={(q) => setEditorQuill(q)}
+            />
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={form.isPublished}
+                  onChange={(e) => setForm(s => ({ ...s, isPublished: e.target.checked }))}
+                />
+                Publish ngay?
+              </label>
+
+              <div className="sm:col-span-2">
+                <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">Hoặc lên lịch đăng</label>
+                <input
+                  type="datetime-local"
+                  className="w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                  value={form.scheduledAt}
+                  onChange={(e) => setForm(s => ({ ...s, scheduledAt: e.target.value }))}
+                />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Nếu chọn thời gian, bài sẽ tự public khi đến giờ (nhờ Firestore Rules).
+                </p>
+              </div>
+            </div>
+
+            <button className="rounded bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700">Tạo bài</button>
+          </form>
+        </>
+      )}
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
   query,
   deleteDoc,
 } from "firebase/firestore";
+import ThemeToggle from "@/components/ThemeToggle";
 
 type Post = {
   id: string;
@@ -22,6 +23,7 @@ type Post = {
   slug?: string;
   date?: any; // Firestore Timestamp | ISO | string
   isPublished?: boolean;
+  scheduledAt?: any; // Firestore Timestamp | ISO | string
 };
 
 export default function AdminDashboard() {
@@ -29,6 +31,12 @@ export default function AdminDashboard() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  // Fix hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // 🧱 Kiểm tra đăng nhập & quyền admin
   useEffect(() => {
@@ -67,7 +75,10 @@ export default function AdminDashboard() {
       const dateStr = v?.date?.toDate
         ? v.date.toDate().toISOString()
         : v?.date ?? null;
-      return { id: d.id, ...v, date: dateStr } as Post;
+      const scheduledStr = v?.scheduledAt?.toDate
+        ? v.scheduledAt.toDate().toISOString()
+        : v?.scheduledAt ?? null;
+      return { id: d.id, ...v, date: dateStr, scheduledAt: scheduledStr } as Post;
     });
     setPosts(data);
     setLoading(false);
@@ -87,9 +98,13 @@ export default function AdminDashboard() {
     }
   };
 
+  if (!mounted) return null; // or a stable skeleton that matches server output exactly
+
   if (checkingAuth) {
     return (
-      <div className="p-6 text-center text-gray-400">Đang kiểm tra quyền…</div>
+      <div className="mx-auto max-w-6xl p-6">
+        <div className="p-10 text-center text-gray-400">Đang kiểm tra quyền…</div>
+      </div>
     );
   }
 
@@ -100,8 +115,8 @@ export default function AdminDashboard() {
         <Link href="/blogs" className="text-indigo-400 hover:underline">
           ← Quay lại Blog
         </Link>
-
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           <Link
             href="/admin/new"
             className="rounded bg-indigo-600 px-3 py-1 text-white hover:bg-indigo-500"
@@ -110,14 +125,14 @@ export default function AdminDashboard() {
           </Link>
           <button
             onClick={() => fetchPosts()}
-            className="text-sm text-gray-400 underline hover:text-gray-200"
+            className="text-sm text-gray-500 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
           >
             Refresh
           </button>
         </div>
       </div>
 
-      <h1 className="mb-6 text-3xl font-bold">
+      <h1 className="mb-6 text-3xl font-bold text-gray-900 dark:text-gray-100">
         📘 Admin — Quản lý bài viết
       </h1>
 
@@ -126,37 +141,37 @@ export default function AdminDashboard() {
       ) : posts.length === 0 ? (
         <p className="text-gray-300">Chưa có bài viết nào.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-700">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-gray-900">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Tiêu đề
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Slug
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Ngày
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Trạng thái
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Hành động
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800 bg-gray-950">
+            <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-800 dark:bg-gray-950">
               {posts.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-900/50">
-                  <td className="px-4 py-3 text-sm text-gray-100">
+                <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                     {p.title ?? "(không tiêu đề)"}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-300">
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
                     {p.slug ?? "-"}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-300">
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
                     {p.date
                       ? new Date(p.date).toLocaleString("vi-VN")
                       : "-"}
@@ -165,6 +180,14 @@ export default function AdminDashboard() {
                     {p.isPublished ? (
                       <span className="inline-flex items-center rounded-full bg-green-600/20 px-2 py-0.5 text-green-400">
                         Published
+                      </span>
+                    ) : (p.scheduledAt && new Date(p.scheduledAt) <= new Date()) ? (
+                      <span className="inline-flex items-center rounded-full bg-green-600/20 px-2 py-0.5 text-green-400">
+                        Published (Auto)
+                      </span>
+                    ) : (p.scheduledAt && new Date(p.scheduledAt) > new Date()) ? (
+                      <span className="inline-flex items-center rounded-full bg-blue-600/20 px-2 py-0.5 text-blue-400">
+                        Scheduled
                       </span>
                     ) : (
                       <span className="inline-flex items-center rounded-full bg-yellow-600/20 px-2 py-0.5 text-yellow-400">
@@ -204,7 +227,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <p className="mt-6 text-sm text-gray-500">
+      <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">
         * Chức năng “Sửa” sẽ mở trang /admin/edit/[id] (bạn có thể tạo sau).
       </p>
     </div>

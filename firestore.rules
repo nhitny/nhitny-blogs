@@ -1,0 +1,50 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    // POSTS (top-level)
+    match /posts/{postId} {
+      // Allow public read for all posts
+      // (Client-side filtering will show only published/scheduled posts)
+      allow read: if true;
+
+      // Only admin can write
+      allow create, update, delete: if isAdmin();
+    }
+
+    // COMMENTS (top-level)
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin() ||
+        (isSignedIn() && request.auth.uid == resource.data.uid);
+    }
+
+    // LIKES (top-level)
+    match /likes/{likeId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+    }
+
+    // TOPICS
+    match /topics/{topicId} {
+      allow read: if true;
+    }
+
+    // USERS
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+  }
+}
