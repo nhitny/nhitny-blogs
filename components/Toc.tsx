@@ -1,30 +1,32 @@
-// import React, { useEffect, useState } from "react";
-// import Link from "next/link";
+"use client";
 
-// function Toc({ headings }) {
-//   const [active, setActive] = useState("");
+import Link from "next/link";
+import { useState } from "react";
 
-//   return (
-//     <nav className="sticky top-32 overflow-auto toc-inner">
-//       <ul>
-//         {headings.map((heading, index) => (
-//           <li
-//             key={heading.uid}
-//             className="mt-4 text-lg text-gray-700 dark:text-gray-400"
-//             style={{
-//               paddingLeft: heading.level === 3 ? "1rem" : "",
-//               color: heading.id === active ? "#6366f1" : "",
-//             }}
-//             onClick={(e) => {
-//               setActive(heading.id);
-//             }}
-//           >
-//             <Link href={`#${heading.id}`}>{heading.text}</Link>
-//           </li>
-//         ))}
-//       </ul>
-//     </nav>
-//   );
-// }
+export interface HeadingItem {
+  id: string;
+  text: string;
+  level: number; // 2 hoặc 3
+  uid?: string;
+}
 
-// export default Toc;
+export default function Toc({ headings }: { headings: HeadingItem[] }) {
+  const [active, setActive] = useState<string>("");
+
+  return (
+    <nav className="toc-inner overflow-auto">
+      <ul>
+        {headings.map((h) => (
+          <li
+            key={h.uid ?? h.id}
+            className="mt-4 text-lg text-gray-400 hover:text-indigo-400"
+            style={{ paddingLeft: h.level === 3 ? "1rem" : 0, color: h.id === active ? "#6366f1" : "" }}
+            onClick={() => setActive(h.id)}
+          >
+            <Link href={`#${h.id}`}>{h.text}</Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}

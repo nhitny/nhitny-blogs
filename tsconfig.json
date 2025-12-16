@@ -1,45 +1,56 @@
 {
   "compilerOptions": {
-    // ---- Module & Target ----
-    "module": "esnext",
     "target": "esnext",
-    "moduleResolution": "node",
-    "jsx": "preserve",
-
-    // ---- TypeScript Options ----
-    "strict": true,
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": false,
     "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowJs": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "incremental": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-
-    // ---- Library Environment ----
-    "lib": ["dom", "dom.iterable", "esnext"],
-
-    // ---- Base Paths & Aliases ----
+    "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["*"],
-      "@/components/*": ["components/*"],
-      "@/Lib/*": ["Lib/*"],
-      "@/firebase/*": ["firebase/*"],
-      "@/Redux/*": ["Redux/*"],
-      "@/styles/*": ["styles/*"]
+      "@/*": [
+        "*"
+      ],
+      "@/components/*": [
+        "components/*"
+      ],
+      "@/firebase/*": [
+        "firebase/*"
+      ],
+      "@/Lib/*": [
+        "Lib/*"
+      ],
+      "@/styles/*": [
+        "styles/*"
+      ]
     },
-
-    // ---- Next.js Plugin ----
-    "plugins": [{ "name": "next" }]
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
-
-  // ---- Files Included in Compilation ----
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "next-env.d.ts",
+    "postcss.config.cjs",
+    "tailwind.config.cjs",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

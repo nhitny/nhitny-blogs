@@ -1,9 +1,44 @@
 "use client";
 
 import { use } from "react";
-import { useEffect, useState } from "react";
-import { db } from "@/firebase/firebaseConfig";
+import { useEffect, useMemo, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/firebase/firebaseConfig";
+import LikeBtn from "@/components/LikeBtn";
+import Comments from "@/components/Comments";
+import Toc, { HeadingItem } from "@/components/Toc";
+
+// Tạo slug từ text (dùng cho id heading)
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9 ]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+}
+
+// Thêm id cho h2/h3 để TOC hoạt động
+function addHeadingIds(html: string): { html: string; headings: HeadingItem[] } {
+  if (!html) return { html, headings: [] };
+
+  const container = document.createElement("div");
+  container.innerHTML = html;
+
+  const hs = Array.from(container.querySelectorAll("h2, h3"));
+  const headings: HeadingItem[] = [];
+
+  hs.forEach((el) => {
+    const level = el.tagName.toLowerCase() === "h2" ? 2 : 3;
+    const text = (el.textContent || "").trim();
+    const id = slugify(text);
+    el.setAttribute("id", id);
+    headings.push({ id, text, level });
+  });
+
+  return { html: container.innerHTML, headings };
+}
 
 export default function BlogSlugPage({
   params,
@@ -12,118 +47,116 @@ export default function BlogSlugPage({
 }) {
   const { slug } = use(params);
   const [post, setPost] = useState<any>(null);
-  const [comments, setComments] = useState<any[]>([]);
-  const [likes, setLikes] = useState(0);
+  const [contentHtml, setContentHtml] = useState<string>("");
+  const [headings, setHeadings] = useState<HeadingItem[]>([]);
 
-  // 🔹 Lấy bài viết + comment
   useEffect(() => {
     if (!slug) return;
-
-    const fetchPostAndComments = async () => {
-      try {
-        // ✅ chỉ lấy bài đã publish
-        const postQuery = query(
-          collection(db, "posts"),
-          where("slug", "==", slug),
-          where("isPublished", "==", true)
-        );
-
-        const postSnapshot = await getDocs(postQuery);
-        if (!postSnapshot.empty) {
-          const postData = postSnapshot.docs[0]?.data();
-          setPost(postData);
-        } else {
-          console.error("Không tìm thấy bài viết với slug:", slug);
-          setPost(null);
-        }
-
-        // ✅ lấy bình luận (public read)
-        const commentSnapshot = await getDocs(
-          query(collection(db, "comments"), where("postId", "==", slug))
-        );
-        const commentData = commentSnapshot.docs.map((doc) => doc.data());
-        setComments(commentData);
-      } catch (error) {
-        console.error("Lỗi khi fetch dữ liệu:", error);
-      }
-    };
-
-    fetchPostAndComments();
-  }, [slug]);
-
-  // 🔹 Lấy số lượng like
-  useEffect(() => {
-    if (!slug) return;
-
-    const fetchLikes = async () => {
-      const likeSnapshot = await getDocs(
-        query(collection(db, "likes"), where("postId", "==", slug))
+    (async () => {
+      // Lấy bài viết public theo slug
+      const q = query(
+        collection(db, "posts"),
+        where("slug", "==", slug),
+        where("isPublished", "==", true)
       );
-      setLikes(likeSnapshot.size);
-    };
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const data = snap.docs[0].data();
+        setPost(data);
 
-    fetchLikes();
+        // Inject id cho h2/h3 để TOC
+        // (thực hiện ở client vì dùng DOM)
+        const { html, headings } = addHeadingIds(data.content || "");
+        setContentHtml(html);
+        setHeadings(headings);
+      } else {
+        setPost(null);
+      }
+    })();
   }, [slug]);
+
+  // Chuẩn hoá tags: chấp nhận array hoặc string (cách nhau bởi , hoặc space)
+  const tags: string[] = useMemo(() => {
+    if (!post?.tags) return post?.topic ? [post.topic] : [];
+    if (Array.isArray(post.tags)) return post.tags;
+    return String(post.tags)
+      .split(/[,\s]+/)
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+  }, [post]);
 
   if (!post) return <p className="p-6">Đang tải bài viết...</p>;
 
   return (
-    <div className="p-6">
-      {/* Tiêu đề bài viết */}
-      <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+    <div className="mx-auto max-w-7xl px-6 pt-8 pb-24">
+      {/* Lưới 2 cột: nội dung + TOC */}
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
+        {/* Nội dung trái */}
+        <div className="lg:col-span-8">
+          {/* Ảnh header */}
+          {post.headerImage && (
+            <img
+              src={post.headerImage}
+              alt={post.title}
+              className="mb-6 h-72 w-full rounded-lg object-cover"
+            />
+          )}
 
-      {/* Ngày đăng */}
-      <p className="text-sm text-gray-500">
-        {post.date?.toDate?.()
-          ? post.date.toDate().toLocaleDateString()
-          : post.date}
-      </p>
-
-      {/* Nội dung bài */}
-      <div
-        className="mb-6 prose dark:prose-invert max-w-none"
-        dangerouslySetInnerHTML={{ __html: post.content }}
-      />
-
-      {/* Nút Like */}
-      <div>
-        <button
-          onClick={() => alert("Like clicked")}
-          className="p-2 bg-blue-500 text-white rounded mb-4"
-        >
-          {likes} Lượt thích
-        </button>
-      </div>
-
-      {/* Bình luận */}
-      <div>
-        <h3 className="text-2xl font-semibold">Bình luận</h3>
-
-        {comments.length === 0 ? (
-          <p>Chưa có bình luận nào.</p>
-        ) : (
-          comments.map((comment, index) => (
-            <div key={index} className="border-b pb-4 mb-4">
-              <strong>{comment.userName}</strong>
-              <p>{comment.content}</p>
-              <small>
-                {comment.createdAt?.toDate?.()
-                  ? comment.createdAt.toDate().toLocaleString()
-                  : comment.createdAt}
-              </small>
+          {/* Tags */}
+          {tags.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-block rounded-full bg-indigo-500 px-3 py-1 text-xs font-semibold tracking-wider text-white dark:bg-indigo-600"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
-          ))
-        )}
+          )}
 
-        <div className="mt-4">
-          <textarea
-            placeholder="Viết bình luận..."
-            className="w-full p-2 border rounded"
-          ></textarea>
-          <button className="mt-2 p-2 bg-blue-600 text-white">
-            Gửi bình luận
-          </button>
+          {/* Tiêu đề */}
+          <h1 className="mb-2 text-3xl font-extrabold text-gray-100 sm:text-4xl">
+            {post.title}
+          </h1>
+
+          {/* Tóm tắt / mô tả + ngày */}
+          {post.description && (
+            <p className="mb-3 text-gray-400">{post.description}</p>
+          )}
+          <p className="mb-8 text-sm text-gray-500">
+            {post.date?.toDate?.()
+              ? post.date.toDate().toLocaleString()
+              : post.date}
+          </p>
+
+          {/* Dấu chấm giống “...” */}
+          <div className="mb-6 text-center text-3xl">• • •</div>
+
+          {/* Nội dung bài viết */}
+          <article
+            className="prose max-w-none dark:prose-invert lg:prose-lg"
+            dangerouslySetInnerHTML={{ __html: contentHtml || post.content }}
+          />
+
+          {/* Like */}
+          <div className="mt-8">
+            <LikeBtn postId={slug} />
+          </div>
+
+          {/* Comments */}
+          <div className="mt-8">
+            <Comments postId={slug} />
+          </div>
         </div>
+
+        {/* TOC phải */}
+        <aside className="lg:col-span-4">
+          <div className="toc sticky top-24 ml-auto max-w-sm">
+            <Toc headings={headings} />
+          </div>
+        </aside>
       </div>
     </div>
   );

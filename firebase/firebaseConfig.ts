@@ -2,6 +2,9 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 // import { getAuth } from "firebase/auth"; // Import getAuth đúng cách
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getStorage } from "firebase/storage";
+
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyCvj6bfGaCC0JMzNvSCXYvuzYNlqtLmU88",
@@ -19,5 +22,8 @@ const auth = getAuth(app);
 
 const db = getFirestore(app);
 
+const storage = getStorage(app);
 
-export { db, auth , provider};
+
+
+export { db, auth , provider, storage};

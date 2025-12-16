@@ -1,60 +1,55 @@
-// import { useState } from "react";
-// import { useTheme } from "next-themes";
-// import useSWR, { useSWRConfig } from "swr";
-// import { AiOutlineHeart, AiFillHeart, AiOutlineLoading } from "react-icons/ai";
+"use client";
 
-// const fetcher = (...args) => fetch(...args).then((res) => res.json());
+import { useEffect, useState } from "react";
+import { AiOutlineHeart, AiFillHeart, AiOutlineLoading } from "react-icons/ai";
+import { addDoc, collection, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
+import { db, auth } from "@/firebase/firebaseConfig";
 
-// function LikeBtn({ id }) {
-//   const { theme } = useTheme();
+export default function LikeBtn({ postId }: { postId: string }) {
+  const [loading, setLoading] = useState(false);
+  const [hasUserLiked, setHasUserLiked] = useState(false);
+  const [totalLikes, setTotalLikes] = useState(0);
 
-//   const [loading, setLoading] = useState(false);
-//   const { mutate } = useSWRConfig();
-//   const { data, error } = useSWR(`/api/likes/${id}`, fetcher);
+  const load = async () => {
+    const snap = await getDocs(query(collection(db, "likes"), where("postId", "==", postId)));
+    setTotalLikes(snap.size);
+    const uid = auth.currentUser?.uid;
+    setHasUserLiked(!!uid && snap.docs.some((d) => (d.data() as any).uid === uid));
+  };
 
-//   const handelClick = async () => {
-//     setLoading(true);
-//     const response = await fetch("/api/like-blog", {
-//       method: "POST",
-//       body: JSON.stringify({ id }),
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//     });
+  useEffect(() => { if (postId) load(); }, [postId]);
 
-//     if (response.status === 200) {
-//       mutate(`/api/likes/${id}`);
-//       setLoading(false);
-//     } else {
-//       setLoading(false);
-//     }
-//   };
+  const toggleLike = async () => {
+    const user = auth.currentUser;
+    if (!user) return alert("Vui lòng đăng nhập!");
+    setLoading(true);
+    const likesRef = collection(db, "likes");
+    if (hasUserLiked) {
+      const snap = await getDocs(query(likesRef, where("postId", "==", postId), where("uid", "==", user.uid)));
+      await Promise.all(snap.docs.map((d) => deleteDoc(doc(db, "likes", d.id))));
+    } else {
+      await addDoc(likesRef, { postId, uid: user.uid, createdAt: new Date() });
+    }
+    await load();
+    setLoading(false);
+  };
 
-//   return (
-//     <div className="justify-center pt-16 pb-6 flex flex-row items-center">
-//       {loading ? (
-//         <AiOutlineLoading
-//           className="animate-spin"
-//           style={{ fontSize: "1.5rem" }}
-//         />
-//       ) : (
-//         <>
-//           <button onClick={handelClick} disabled={loading ? true : false}>
-//             {data && data.hasUserLiked ? (
-//               <AiFillHeart
-//                 style={{ fontSize: "2rem", color: "rgba(220, 38, 38)" }}
-//               />
-//             ) : (
-//               <AiOutlineHeart style={{ fontSize: "2rem" }} />
-//             )}
-//           </button>
-//           <span style={{ fontSize: "1rem", paddingLeft: "16px" }}>
-//             {data && data.totalLikes}
-//           </span>
-//         </>
-//       )}
-//     </div>
-//   );
-// }
-
-// export default LikeBtn;
+  return (
+    <div className="flex items-center justify-center pt-16 pb-6">
+      {loading ? (
+        <AiOutlineLoading className="animate-spin" style={{ fontSize: "1.5rem" }} />
+      ) : (
+        <>
+          <button onClick={toggleLike} disabled={loading}>
+            {hasUserLiked ? (
+              <AiFillHeart style={{ fontSize: "2rem", color: "rgba(220, 38, 38)" }} />
+            ) : (
+              <AiOutlineHeart style={{ fontSize: "2rem" }} />
+            )}
+          </button>
+          <span style={{ fontSize: "1rem", paddingLeft: "16px" }}>{totalLikes}</span>
+        </>
+      )}
+    </div>
+  );
+}

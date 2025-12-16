@@ -1,16 +1,19 @@
-import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import BlogHeader from "@/components/BlogHeader";
 import { getAllBlogPosts, getAllTopics } from "@/Lib/Data";
 
-export const metadata: Metadata = {
-  title: "Explore • Learn • Build — Blogs",
-  description: "Latest posts on JS, React and Web.",
-};
-
 export default async function BlogsPage() {
-  const blogs = await getAllBlogPosts();      // đã lọc isPublished == true
-  const topics = await getAllTopics();
+  const blogs = await getAllBlogPosts();
+
+  // Chuẩn hoá topics => string[]
+  const topicsRaw = await getAllTopics();
+  const topics: string[] = (topicsRaw as any[])
+    .map((t) =>
+      typeof t === "string"
+        ? t
+        : t?.name ?? t?.topic ?? t?.title ?? t?.slug ?? null
+    )
+    .filter(Boolean);
 
   return (
     <>
@@ -19,22 +22,7 @@ export default async function BlogsPage() {
       {/* HERO */}
       <section className="relative bg-gray-950 text-gray-100">
         <div className="mx-auto max-w-7xl px-6 pt-20 pb-8 sm:pt-28 sm:pb-12">
-          {/* Toolbar */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 text-sm">
-              <button className="inline-flex items-center gap-2 rounded-full border border-gray-800 bg-gray-900/60 px-3 py-1">
-                <span>🖼️</span>
-                <span className="text-gray-300">Latest</span>
-              </button>
-              <button className="rounded-full border border-gray-800 bg-gray-900/60 px-3 py-1 text-gray-300">
-                Posts ▾
-              </button>
-            </div>
-            {/* chỗ icon theme/login nếu muốn */}
-          </div>
-
-          {/* Title center, gradient đúng tone */}
-          <h1 className="mt-8 text-center text-5xl font-extrabold tracking-tight sm:text-7xl">
+          <h1 className="mt-2 text-center text-5xl font-extrabold tracking-tight sm:mt-0 sm:text-7xl">
             <span className="text-gray-300">Explore </span>
             <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
               Learn
@@ -51,7 +39,9 @@ export default async function BlogsPage() {
       {/* GRID */}
       <main className="mx-auto max-w-7xl px-6 pb-20">
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-          {blogs.map((b: any) => b.isPublished && <BlogHeader key={b.id} data={b} />)}
+          {blogs.map(
+            (b: any) => b.isPublished && <BlogHeader key={b.id} data={b} />
+          )}
         </div>
       </main>
     </>

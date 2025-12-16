@@ -11,8 +11,6 @@ export default async function AboutPage() {
   return <AboutPageClient topics={topics} />;
 }
 
-// Thêm khai báo "use client" để chỉ định đây là Client Component
-"use client";
 
 function AboutPageClient({ topics }: { topics: any }) {
   return (

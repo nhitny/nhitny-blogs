@@ -3,52 +3,25 @@
 @tailwind utilities;
 
 @layer utilities {
-  @variants dark {
-    .bg-dark {
-      background: #070c17db;
-      backdrop-filter: blur(3px);
-    }
+  .bg-dark {
+    background: #070c17db;
+    backdrop-filter: blur(3px);
   }
 }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
+textarea::-webkit-scrollbar { width: 0; }
 
-textarea::-webkit-scrollbar {
-  width: 0;
-}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #6264f3 !important; border-radius: 5px !important; }
 
-/* width */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-/* Track */
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+button:focus { outline: 0 !important; }
 
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: #6264f3 !important;
-  border-radius: 5px !important;
-}
+@media (max-width: 1180px) { .toc { display: none; } }
+.toc-inner { max-height: calc(100vh - 25vh); }
+.dropdown:hover .dropdown-menu { display: block; }
 
-button:focus {
-  outline: 0 !important;
-}
-
-@media (max-width: 1180px) {
-  .toc {
-    display: none;
-  }
-}
-
-.toc-inner {
-  max-height: calc(100vh - 25vh);
-}
-
-.dropdown:hover .dropdown-menu {
-  display: block;
-}
+body { @apply bg-gray-950 text-gray-100 antialiased; }
+a { @apply no-underline; }
+.prose { @apply prose-invert max-w-none; }
