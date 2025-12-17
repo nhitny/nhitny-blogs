@@ -2,7 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
 @layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
   .bg-dark {
     background: #070c17db;
     backdrop-filter: blur(3px);

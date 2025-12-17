@@ -1,145 +1,236 @@
 "use client";
 
+import { useAuth } from "@/contexts/AuthContext";
+import { db } from "@/firebase/firebaseConfig";
+import {
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { addDoc, collection, deleteDoc, doc, getDocs, query, serverTimestamp, where } from "firebase/firestore";
-import { db, auth } from "@/firebase/firebaseConfig";
-import Alert from "@/components/Alert";
+import { FiTrash2, FiSend } from "react-icons/fi";
+import Link from "next/link";
 
-interface CommentDoc {
-  id?: string;
+interface Comment {
+  id: string;
+  userId: string;
+  userEmail: string;
   userName: string;
-  userImage?: string;
+  userPhoto: string;
   content: string;
-  createdAt?: any;
-  uid: string;
+  createdAt: any;
+}
+
+interface CommentsProps {
   postId: string;
 }
 
-export default function Comments({ postId }: { postId: string }) {
-  const [comment, setComment] = useState("");
-  const [items, setItems] = useState<CommentDoc[]>([]);
-  const [alert, setAlert] = useState<{ show: boolean; type: "success" | "error"; message: string }>({
-    show: false, type: "success", message: ""
-  });
+export default function Comments({ postId }: CommentsProps) {
+  const { user } = useAuth();
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const show = (type: "success" | "error", message: string) => {
-    setAlert({ show: true, type, message });
-    setTimeout(() => setAlert((s) => ({ ...s, show: false })), 1800);
-  };
+  // Load comments in real-time
+  useEffect(() => {
+    if (!postId) return;
 
-  const load = async () => {
-    const snap = await getDocs(query(collection(db, "comments"), where("postId", "==", postId)));
-    setItems(snap.docs.map((d) => ({ id: d.id, ...(d.data() as CommentDoc) })));
-  };
+    setLoading(true);
+    const commentsRef = collection(db, "posts", postId, "comments");
+    const q = query(commentsRef, orderBy("createdAt", "desc"));
 
-  useEffect(() => { if (postId) load(); }, [postId]);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const commentsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Comment[];
+      setComments(commentsData);
+      setLoading(false);
+    });
 
-  const onPost = async () => {
-    const user = auth.currentUser;
-    if (!user) return show("error", "Vui lòng đăng nhập để bình luận");
-    if (!comment.trim()) return;
+    return () => unsubscribe();
+  }, [postId]);
 
-    await addDoc(collection(db, "comments"), {
-      postId,
-      uid: user.uid,
-      userName: user.displayName ?? "Anonymous",
-      content: comment.trim(),
-      createdAt: serverTimestamp(),
-    } as CommentDoc);
+  // Submit comment
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !newComment.trim()) return;
 
-    setComment("");
-    show("success", "Đã gửi bình luận");
-    await load();
-
-    // Update comments count in post document
+    setSubmitting(true);
     try {
-      const { updateDoc, doc: firestoreDoc, collection: firestoreCollection, query: firestoreQuery, where: firestoreWhere, getDocs: firestoreGetDocs } = await import("firebase/firestore");
-      const postsRef = firestoreCollection(db, "posts");
-      const q = firestoreQuery(postsRef, firestoreWhere("slug", "==", postId));
-      const postSnap = await firestoreGetDocs(q);
-      if (!postSnap.empty) {
-        const postDoc = postSnap.docs[0];
-        await updateDoc(firestoreDoc(db, "posts", postDoc.id), {
-          commentsCount: items.length + 1
-        });
-      }
-    } catch (err) {
-      console.error("Error updating post comments count:", err);
+      const commentsRef = collection(db, "posts", postId, "comments");
+      await addDoc(commentsRef, {
+        userId: user.uid,
+        userEmail: user.email,
+        userName: user.displayName || user.email,
+        userPhoto: user.photoURL || "",
+        content: newComment.trim(),
+        createdAt: serverTimestamp(),
+      });
+      setNewComment("");
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      alert("Không thể thêm bình luận. Vui lòng thử lại.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const onDelete = async (id?: string, uid?: string) => {
-    const user = auth.currentUser;
-    if (!id) return;
-    if (!user || user.uid !== uid) return show("error", "Bạn không thể xoá bình luận này");
-    await deleteDoc(doc(db, "comments", id));
-    await load();
+  // Delete comment
+  const handleDelete = async (commentId: string) => {
+    if (!confirm("Bạn có chắc muốn xóa bình luận này?")) return;
 
-    // Update comments count in post document
     try {
-      const { updateDoc, doc: firestoreDoc, collection: firestoreCollection, query: firestoreQuery, where: firestoreWhere, getDocs: firestoreGetDocs } = await import("firebase/firestore");
-      const postsRef = firestoreCollection(db, "posts");
-      const q = firestoreQuery(postsRef, firestoreWhere("slug", "==", postId));
-      const postSnap = await firestoreGetDocs(q);
-      if (!postSnap.empty) {
-        const postDoc = postSnap.docs[0];
-        await updateDoc(firestoreDoc(db, "posts", postDoc.id), {
-          commentsCount: Math.max(0, items.length - 1)
-        });
-      }
-    } catch (err) {
-      console.error("Error updating post comments count:", err);
+      await deleteDoc(doc(db, "posts", postId, "comments", commentId));
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      alert("Không thể xóa bình luận. Vui lòng thử lại.");
     }
+  };
+
+  // Format date
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return "";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return new Intl.DateTimeFormat("vi-VN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
   };
 
   return (
-    <>
-      <Alert show={alert.show} type={alert.type} message={alert.message} />
-      <div className="mx-auto mt-6 mb-6 max-w-screen-md">
-        <textarea
-          className="mb-3 block w-full resize-none rounded border border-gray-100 bg-gray-100 p-3 leading-relaxed dark:border-gray-800 dark:bg-gray-800 dark:focus:border-gray-700"
-          placeholder="What are your thoughts..?"
-          rows={3}
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-        />
-        <div className="text-right">
-          <button className="mr-3 rounded bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white dark:bg-indigo-600" onClick={() => setComment("")}>
-            Reset
-          </button>
-          <button className="rounded bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white dark:bg-indigo-600" onClick={onPost}>
-            Post
-          </button>
-        </div>
-      </div>
+    <div className="mt-12 border-t border-gray-200 pt-8 dark:border-gray-700">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        Bình luận ({comments.length})
+      </h2>
 
-      <div className="mx-auto max-w-screen-md">
-        {items.map((c) => (
-          <div className="space-y-4 py-3" key={c.id}>
-            <div className="flex">
-              <div className="mr-3 flex-shrink-0">
-                {c.userImage ? (
-                  <img className="mt-2 h-10 w-10 rounded-full" src={c.userImage} alt={c.userName} />
-                ) : (
-                  <div className="mt-2 h-10 w-10 rounded-full bg-gray-700" />
-                )}
+      {/* Comment Form */}
+      {user ? (
+        <form onSubmit={handleSubmit} className="mt-6">
+          <div className="flex gap-3">
+            {user.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt={user.displayName || "User"}
+                className="h-10 w-10 rounded-full"
+              />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white text-sm font-medium">
+                {user.displayName?.[0] || user.email?.[0] || "U"}
               </div>
-              <div className="relative flex-1 rounded-lg border border-gray-300 px-4 py-2 leading-relaxed dark:border-gray-600">
-                <strong className="text-gray-700 dark:text-gray-200">{c.userName}</strong>{" "}
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {c.createdAt?.toDate?.() ? c.createdAt.toDate().toLocaleString() : ""}
-                </span>
-                {c.uid === auth.currentUser?.uid && (
-                  <button className="absolute right-3 top-3 text-red-500" onClick={() => onDelete(c.id, c.uid)}>
-                    Delete
-                  </button>
-                )}
-                <p className="mt-1 text-sm text-gray-300">{c.content}</p>
+            )}
+            <div className="flex-1">
+              <textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Viết bình luận..."
+                rows={3}
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+              />
+              <div className="mt-2 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={!newComment.trim() || submitting}
+                  className="flex items-center space-x-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {submitting ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                      <span>Đang gửi...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FiSend className="h-4 w-4" />
+                      <span>Gửi bình luận</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
-        ))}
+        </form>
+      ) : (
+        <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+          <p className="text-gray-600 dark:text-gray-400">
+            Bạn cần{" "}
+            <Link
+              href="/login"
+              className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+            >
+              đăng nhập
+            </Link>{" "}
+            để bình luận
+          </p>
+        </div>
+      )}
+
+      {/* Comments List */}
+      <div className="mt-8 space-y-6">
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              Đang tải bình luận...
+            </p>
+          </div>
+        ) : comments.length === 0 ? (
+          <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+            Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
+          </p>
+        ) : (
+          comments.map((comment) => (
+            <div
+              key={comment.id}
+              className="flex gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+            >
+              {comment.userPhoto ? (
+                <img
+                  src={comment.userPhoto}
+                  alt={comment.userName}
+                  className="h-10 w-10 rounded-full"
+                />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white text-sm font-medium">
+                  {comment.userName?.[0] || "U"}
+                </div>
+              )}
+              <div className="flex-1">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {comment.userName}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {formatDate(comment.createdAt)}
+                    </p>
+                  </div>
+                  {user && user.uid === comment.userId && (
+                    <button
+                      onClick={() => handleDelete(comment.id)}
+                      className="rounded p-1 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                      aria-label="Delete comment"
+                    >
+                      <FiTrash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <p className="mt-2 text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                  {comment.content}
+                </p>
+              </div>
+            </div>
+          ))
+        )}
       </div>
-    </>
+    </div>
   );
 }

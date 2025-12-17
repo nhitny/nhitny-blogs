@@ -1,4 +1,4 @@
-export async function getHeadings(source) {
+export async function getHeadings(source: string) {
     // Get each line individually, and filter out anything that
     // isn't a heading.
     const headingLines = source.split("\n").filter((line) => {

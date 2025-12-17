@@ -1,4 +1,4 @@
-import { SiTwitter, SiGithub, SiInstagram } from "react-icons/si";
+import { SiX, SiGithub, SiInstagram } from "react-icons/si";
 import { FiLinkedin } from "react-icons/fi";
 
 export default function Footer() {
@@ -14,7 +14,7 @@ export default function Footer() {
             </a>
           </p>
           <span className="mt-2 inline-flex justify-center sm:ml-auto sm:mt-0 sm:justify-start">
-            <a className="text-gray-50" href="https://twitter.com/soumyajit4419" target="_blank" rel="noreferrer"><SiTwitter /></a>
+            <a className="text-gray-50" href="https://twitter.com/soumyajit4419" target="_blank" rel="noreferrer"><SiX /></a>
             <a className="ml-4 text-gray-50" href="https://github.com/soumyajit4419" target="_blank" rel="noreferrer"><SiGithub /></a>
             <a className="ml-4 text-gray-50" href="https://www.instagram.com/soumyajit4419/" target="_blank" rel="noreferrer"><SiInstagram /></a>
             <a className="ml-4 text-gray-50" href="https://www.linkedin.com/in/soumyajit4419/" target="_blank" rel="noreferrer"><FiLinkedin /></a>

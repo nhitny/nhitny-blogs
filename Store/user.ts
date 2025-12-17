@@ -2,7 +2,12 @@ const initialState = {
   user: undefined,
 };
 
-export const userReducer = (state = initialState, action) => {
+interface UserAction {
+  type: string;
+  payload?: any;
+}
+
+export const userReducer = (state = initialState, action: UserAction) => {
   switch (action.type) {
     case "STORE_USER": {
       return { ...state, user: action.payload };

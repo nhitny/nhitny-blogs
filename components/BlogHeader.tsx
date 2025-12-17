@@ -7,6 +7,30 @@ function minutesRead(html?: string) {
   return `${mins} min read`;
 }
 
+function getRelativeTime(dateString?: string | any) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return "vừa xong";
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} giờ trước`;
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) return `${diffInDays} ngày trước`;
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) return `${diffInMonths} tháng trước`;
+
+  const diffInYears = Math.floor(diffInDays / 365);
+  return `${diffInYears} năm trước`;
+}
+
 export interface BlogData {
   id?: string;
   title: string;
@@ -31,20 +55,29 @@ export default function BlogHeader({ data }: { data: BlogData }) {
 
   return (
     <article className="group relative flex h-full flex-col justify-between rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 transition hover:-translate-y-0.5 hover:shadow-lg dark:bg-[#121826] dark:ring-gray-800/80 dark:hover:shadow-[0_2px_20px_rgba(0,0,0,0.25)]">
-      {/* Tags - Fixed height container to align titles */}
-      <div className="mb-1 h-[40px] flex flex-wrap gap-2 overflow-hidden">
-        {data.tags && data.tags.length > 0 && (
-          <>
-            {data.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-[13px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 h-fit"
-              >
-                🏷️ {tag}
-              </span>
-            ))}
-          </>
-        )}
+      <div className="mb-1 flex h-[40px] items-start justify-between gap-2 overflow-hidden">
+        <div className="flex flex-wrap gap-2">
+          {data.tags && data.tags.length > 0 && (
+            <>
+              {data.tags.slice(0, 2).map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-[13px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 h-fit"
+                >
+                  🏷️ {tag}
+                </span>
+              ))}
+            </>
+          )}
+        </div>
+
+        {/* Relative Time */}
+        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap pt-1.5">
+          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{getRelativeTime(data.date)}</span>
+        </div>
       </div>
 
       {data.topic && (

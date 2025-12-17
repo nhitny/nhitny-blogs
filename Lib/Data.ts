@@ -98,20 +98,26 @@ export async function getAllBlogPosts() {
 }
 
 export async function getAllTopics(): Promise<string[]> {
-  const snap = await getDocs(collection(db, "topics"));
-  const raw = snap.docs.map((d) => d.data());
+  try {
+    // Aggregating tags from all posts is more reliable for now
+    const posts = await getAllBlogPosts();
+    const tags = new Set<string>();
 
-  // cố gắng lấy tên topic từ các field phổ biến
-  const names = raw
-    .map((t: any) =>
-      typeof t === "string"
-        ? t
-        : t?.name ?? t?.topic ?? t?.title ?? t?.slug ?? null
-    )
-    .filter(Boolean) as string[];
+    posts.forEach(post => {
+      if (Array.isArray(post.tags)) {
+        post.tags.forEach((tag: string) => {
+          if (tag && typeof tag === 'string') {
+            tags.add(tag);
+          }
+        });
+      }
+    });
 
-  // loại trùng
-  return Array.from(new Set(names));
+    return Array.from(tags).sort();
+  } catch (error) {
+    console.error("Error fetching topics:", error);
+    return [];
+  }
 }
 
 

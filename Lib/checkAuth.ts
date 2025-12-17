@@ -1,6 +1,7 @@
 const checkAuth = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  if (user) {
+  const userStr = localStorage.getItem("user");
+  if (userStr) {
+    const user = JSON.parse(userStr);
     return user;
   } else {
     return null;
