@@ -15,6 +15,7 @@ import {
 import { useEffect, useState } from "react";
 import { FiTrash2, FiSend } from "react-icons/fi";
 import Link from "next/link";
+import UserAvatar from "./UserAvatar";
 
 interface Comment {
   id: string;
@@ -117,17 +118,11 @@ export default function Comments({ postId }: CommentsProps) {
       {user ? (
         <form onSubmit={handleSubmit} className="mt-6">
           <div className="flex gap-3">
-            {user.photoURL ? (
-              <img
-                src={user.photoURL}
-                alt={user.displayName || "User"}
-                className="h-10 w-10 rounded-full"
-              />
-            ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white text-sm font-medium">
-                {user.displayName?.[0] || user.email?.[0] || "U"}
-              </div>
-            )}
+            <UserAvatar
+              src={user.photoURL}
+              alt={user.displayName || "User"}
+              className="h-10 w-10"
+            />
             <div className="flex-1">
               <textarea
                 value={newComment}
@@ -192,17 +187,11 @@ export default function Comments({ postId }: CommentsProps) {
               key={comment.id}
               className="flex gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
             >
-              {comment.userPhoto ? (
-                <img
-                  src={comment.userPhoto}
-                  alt={comment.userName}
-                  className="h-10 w-10 rounded-full"
-                />
-              ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white text-sm font-medium">
-                  {comment.userName?.[0] || "U"}
-                </div>
-              )}
+              <UserAvatar
+                src={comment.userPhoto}
+                alt={comment.userName}
+                className="h-10 w-10"
+              />
               <div className="flex-1">
                 <div className="flex items-start justify-between">
                   <div>

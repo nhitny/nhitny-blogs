@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
 import { FiSearch, FiMenu, FiX, FiUser, FiLogOut, FiSun, FiMoon } from "react-icons/fi";
+import UserAvatar from "./UserAvatar";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -85,17 +86,11 @@ export default function Navbar() {
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center space-x-2 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  {user.photoURL ? (
-                    <img
-                      src={user.photoURL}
-                      alt={user.displayName || "User"}
-                      className="h-8 w-8 rounded-full"
-                    />
-                  ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-white">
-                      <FiUser className="h-4 w-4" />
-                    </div>
-                  )}
+                  <UserAvatar
+                    src={user.photoURL}
+                    alt={user.displayName || "User"}
+                    className="h-8 w-8"
+                  />
                   <span className="hidden text-sm font-medium text-gray-700 dark:text-gray-300 lg:block">
                     {user.displayName || user.email}
                   </span>
