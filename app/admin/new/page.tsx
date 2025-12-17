@@ -40,6 +40,9 @@ export default function NewPostPage() {
   const router = useRouter();
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [editorQuill, setEditorQuill] = useState<any>(null);
+  const [postId, setPostId] = useState<string | null>(null); // Track draft ID
+  const [saving, setSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   const [form, setForm] = useState<PostForm>({
     title: "",
@@ -78,6 +81,68 @@ export default function NewPostPage() {
     return () => unsub();
   }, [router]);
 
+  // Auto-create draft on mount
+  useEffect(() => {
+    if (checkingAuth || postId) return;
+
+    const createDraft = async () => {
+      try {
+        const docRef = await addDoc(collection(db, "posts"), {
+          title: "Untitled Draft",
+          slug: `draft-${Date.now()}`,
+          content: "",
+          isPublished: false,
+          date: serverTimestamp(),
+          views: 0,
+          likes: 0,
+          commentsCount: 0,
+        });
+        setPostId(docRef.id);
+        console.log("✅ Auto-created draft:", docRef.id);
+      } catch (err) {
+        console.error("Failed to create draft:", err);
+      }
+    };
+
+    createDraft();
+  }, [checkingAuth, postId]);
+
+  // Auto-save with debounce
+  useEffect(() => {
+    if (!postId || checkingAuth) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        setSaving(true);
+        const { updateDoc } = await import("firebase/firestore");
+        const payload: any = {
+          title: form.title || "Untitled Draft",
+          slug: form.slug || slugify(form.title || `draft-${Date.now()}`),
+          description: form.description ?? "",
+          headerImage: form.headerImage ?? "",
+          tags: form.tags ?? [],
+          author: form.author ?? "",
+          content: form.content,
+          isPublished: form.isPublished,
+        };
+
+        if (form.scheduledAt) {
+          payload.scheduledAt = Timestamp.fromDate(new Date(form.scheduledAt));
+        }
+
+        await updateDoc(doc(db, "posts", postId), payload);
+        setLastSaved(new Date());
+        console.log("💾 Auto-saved");
+      } catch (err) {
+        console.error("Auto-save failed:", err);
+      } finally {
+        setSaving(false);
+      }
+    }, 2000); // Debounce 2 seconds
+
+    return () => clearTimeout(timer);
+  }, [form, postId, checkingAuth]);
+
   // Upload ảnh -> URL
   const uploadImage = async (file: File) => {
     const r = ref(storage, `images/${Date.now()}-${file.name}`);
@@ -101,29 +166,36 @@ export default function NewPostPage() {
       alert("Vui lòng nhập Tiêu đề và Nội dung!");
       return;
     }
-    const payload: any = {
-      title: form.title,
-      slug: form.slug || slugify(form.title),
-      description: form.description ?? "",
-      headerImage: form.headerImage ?? "",
-      tags: form.tags ?? [],
-      author: form.author ?? "",
-      content: form.content,
-      isPublished: form.isPublished,
-      date: serverTimestamp(),
-      views: 0,
-      likes: 0,
-      commentsCount: 0,
-    };
 
-    if (form.scheduledAt) {
-      payload.scheduledAt = Timestamp.fromDate(new Date(form.scheduledAt));
-      // tuỳ logic của bạn: có thể bỏ isPublished=false để chỉ rely vào scheduledAt + Firestore Rules
+    if (!postId) {
+      alert("Lỗi: Không tìm thấy bài viết!");
+      return;
     }
 
-    await addDoc(collection(db, "posts"), payload);
-    alert("✅ Đã tạo bài viết!");
-    router.replace("/admin/dashboard");
+    try {
+      const { updateDoc } = await import("firebase/firestore");
+      const payload: any = {
+        title: form.title,
+        slug: form.slug || slugify(form.title),
+        description: form.description ?? "",
+        headerImage: form.headerImage ?? "",
+        tags: form.tags ?? [],
+        author: form.author ?? "",
+        content: form.content,
+        isPublished: form.isPublished,
+      };
+
+      if (form.scheduledAt) {
+        payload.scheduledAt = Timestamp.fromDate(new Date(form.scheduledAt));
+      }
+
+      await updateDoc(doc(db, "posts", postId), payload);
+      alert("✅ Đã lưu bài viết!");
+      router.replace("/admin/dashboard");
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi lưu bài viết!");
+    }
   };
 
   return (
@@ -133,7 +205,11 @@ export default function NewPostPage() {
       ) : (
         <>
           <div className="mb-8 flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">📝 Soạn bài viết mới</h1>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">📝 Soạn bài viết mới</h1>
+              {saving && <p className="text-sm text-gray-500 mt-1">💾 Đang lưu...</p>}
+              {!saving && lastSaved && <p className="text-sm text-green-600 mt-1">✅ Đã lưu lúc {lastSaved.toLocaleTimeString('vi-VN')}</p>}
+            </div>
             <Link href="/admin/dashboard" className="flex items-center text-indigo-500 hover:text-indigo-600 font-medium transition-colors">
               ← Quay lại Dashboard
             </Link>
