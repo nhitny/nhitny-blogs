@@ -111,6 +111,24 @@ a {
   @apply border-t-0 mt-0 pt-0;
 }
 
+/* --- FORCED DARK MODE TEXT FIX --- */
+/* Đảm bảo văn bản luôn hiển thị màu sáng trong chế độ tối, bất kể inline style */
+.dark .prose p,
+.dark .prose li,
+.dark .prose strong,
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4 {
+  color: #e5e7eb !important;
+  /* gray-200 */
+}
+
+.dark .prose a {
+  color: #60a5fa !important;
+  /* blue-400 */
+}
+
 /* ===========================
    🔥 QUILL EDITOR FIX BIDI 🔥
    =========================== */
