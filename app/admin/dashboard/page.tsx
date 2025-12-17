@@ -321,7 +321,19 @@ export default function AdminDashboard() {
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Post</th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Metrics</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                        <div className="flex items-center gap-1 group relative">
+                          Status
+                          <span className="cursor-help text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">ⓘ</span>
+                          <div className="invisible group-hover:visible absolute left-0 top-6 z-10 w-64 rounded-lg bg-gray-900 p-3 text-xs font-normal text-white shadow-lg dark:bg-gray-700">
+                            <div className="space-y-2">
+                              <div><span className="font-semibold text-green-300">Published:</span> Bài đã công khai</div>
+                              <div><span className="font-semibold text-blue-300">Scheduled:</span> Tự động xuất bản vào thời gian đã hẹn</div>
+                              <div><span className="font-semibold text-yellow-300">Draft:</span> Bản nháp chưa công khai</div>
+                            </div>
+                          </div>
+                        </div>
+                      </th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Scheduled</th>
                       <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Actions</th>
                     </tr>
@@ -330,7 +342,9 @@ export default function AdminDashboard() {
                     {posts.map((p) => (
                       <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 group transition-colors">
                         <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[200px]" title={p.title}>{p.title || "(No title)"}</div>
+                          <Link href={`/blogs/${p.slug}`} className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 truncate max-w-[200px] block" title={p.title}>
+                            {p.title || "(No title)"}
+                          </Link>
                           <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                             <span className="flex items-center gap-1"><FiCalendar className="w-3 h-3" /> {p.date ? new Date(p.date).toLocaleDateString('vi-VN') : 'N/A'}</span>
                           </div>
@@ -344,11 +358,11 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {p.isPublished ? (
-                            <span title="Bài viết đã được xuất bản công khai" className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300 cursor-help">Published</span>
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">Published</span>
                           ) : (p.scheduledAt && new Date(p.scheduledAt) > new Date()) ? (
-                            <span title="Bài viết sẽ tự động xuất bản vào thời gian đã hẹn" className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 cursor-help">Scheduled</span>
+                            <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Scheduled</span>
                           ) : (
-                            <span title="Bản nháp - chưa công khai" className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 cursor-help">Draft</span>
+                            <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Draft</span>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
