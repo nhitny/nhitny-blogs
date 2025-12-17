@@ -77,7 +77,8 @@ export default function BlogSlugPage({
           const isScheduledPassed = data.scheduledAt && data.scheduledAt.toDate() <= now;
 
           if (isPublished || isScheduledPassed) {
-            setPost(data);
+            // Include Firestore ID in the post state
+            setPost({ ...data, id: snap.docs[0].id });
 
             // Inject id cho h2/h3 để TOC
             const { html, headings } = addHeadingIds(data.content || "");
@@ -411,12 +412,12 @@ export default function BlogSlugPage({
 
           {/* Like */}
           <div className="mt-8">
-            <LikeBtn postId={slug} />
+            <LikeBtn postId={post.id} />
           </div>
 
           {/* Comments */}
           <div className="mt-8">
-            <Comments postId={slug} />
+            <Comments postId={post.id} />
           </div>
         </div>
       </div>
