@@ -189,28 +189,56 @@ export default function EditPostPage() {
                   return;
             }
 
-            const payload: any = {
-                  title: form.title,
-                  slug: form.slug || slugify(form.title),
-                  description: form.description ?? "",
-                  headerImage: form.headerImage ?? "",
-                  tags: form.tags ?? [],
-                  author: form.author ?? "",
-                  content: form.content,
-                  isPublished: form.isPublished,
-                  updatedAt: serverTimestamp(),
-            };
+            // Validation & Confirmation
+            let finalIsPublished = form.isPublished;
 
             if (form.scheduledAt) {
-                  payload.scheduledAt = Timestamp.fromDate(new Date(form.scheduledAt));
+                  const scheduleTime = new Date(form.scheduledAt);
+                  if (scheduleTime <= new Date()) {
+                        alert("⚠️ Thời gian hẹn phải lớn hơn thời gian hiện tại!");
+                        return;
+                  }
+                  const confirmSchedule = window.confirm(`Bạn có muốn cập nhật LỊCH xuất bản vào lúc ${scheduleTime.toLocaleString('vi-VN')} không?`);
+                  if (!confirmSchedule) return;
+
+                  finalIsPublished = false;
+            } else if (form.isPublished) {
+                  // Chỉ confirm nếu đang publish (tránh confirm mỗi khi save draft edit)
+                  // Nhưng đây là nút submit chính (Save changes), nên confirm là tốt.
+                  const confirmPublish = window.confirm("Bạn có muốn cập nhật và XUẤT BẢN bài viết ngay bây giờ?");
+                  if (!confirmPublish) return;
             } else {
-                  // Remove scheduledAt if cleared
-                  payload.scheduledAt = null;
+                  const confirmDraft = window.confirm("Lưu thay đổi dưới dạng BẢN NHÁP (Draft)?");
+                  if (!confirmDraft) return;
             }
 
-            await updateDoc(doc(db, "posts", postId), payload);
-            alert("✅ Đã cập nhật bài viết!");
-            router.replace("/admin/dashboard");
+            try {
+                  const payload: any = {
+                        title: form.title,
+                        slug: form.slug || slugify(form.title),
+                        description: form.description ?? "",
+                        headerImage: form.headerImage ?? "",
+                        tags: form.tags ?? [],
+                        author: form.author ?? "",
+                        content: form.content,
+                        isPublished: finalIsPublished,
+                        updatedAt: serverTimestamp(),
+                  };
+
+                  if (form.scheduledAt) {
+                        payload.scheduledAt = Timestamp.fromDate(new Date(form.scheduledAt));
+                  } else {
+                        // Remove scheduledAt if cleared
+                        payload.scheduledAt = null;
+                  }
+
+                  await updateDoc(doc(db, "posts", postId), payload);
+                  alert(finalIsPublished ? "✅ Đã cập nhật và xuất bản!" : (form.scheduledAt ? "✅ Đã cập nhật lịch hẹn!" : "✅ Đã lưu bản nháp!"));
+                  router.replace("/admin/dashboard");
+            } catch (err) {
+                  console.error(err);
+                  alert("Lỗi khi cập nhật bài viết!");
+            }
       };
 
       return (

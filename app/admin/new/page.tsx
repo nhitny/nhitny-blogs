@@ -172,6 +172,29 @@ export default function NewPostPage() {
       return;
     }
 
+    // Validation & Confirmation
+    let finalIsPublished = form.isPublished;
+
+    if (form.scheduledAt) {
+      const scheduleTime = new Date(form.scheduledAt);
+      if (scheduleTime <= new Date()) {
+        alert("⚠️ Thời gian hẹn phải lớn hơn thời gian hiện tại!");
+        return;
+      }
+      const confirmSchedule = window.confirm(`Bạn có muốn LÊN LỊCH xuất bản bài viết vào lúc ${scheduleTime.toLocaleString('vi-VN')} không?`);
+      if (!confirmSchedule) return;
+
+      // Nếu lên lịch thì force isPublished = false (để nó ko hiện là Published ngay)
+      finalIsPublished = false;
+    } else if (form.isPublished) {
+      const confirmPublish = window.confirm("Bạn có muốn XUẤT BẢN bài viết này công khai ngay bây giờ?");
+      if (!confirmPublish) return;
+    } else {
+      // Draft
+      const confirmDraft = window.confirm("Lưu bài viết dưới dạng BẢN NHÁP (Draft)?");
+      if (!confirmDraft) return;
+    }
+
     try {
       const { updateDoc } = await import("firebase/firestore");
       const payload: any = {
@@ -182,15 +205,17 @@ export default function NewPostPage() {
         tags: form.tags ?? [],
         author: form.author ?? "",
         content: form.content,
-        isPublished: form.isPublished,
+        isPublished: finalIsPublished,
       };
 
       if (form.scheduledAt) {
         payload.scheduledAt = Timestamp.fromDate(new Date(form.scheduledAt));
+      } else {
+        payload.scheduledAt = null; // Clear schedule if removed
       }
 
       await updateDoc(doc(db, "posts", postId), payload);
-      alert("✅ Đã lưu bài viết!");
+      alert(finalIsPublished ? "✅ Đã xuất bản!" : (form.scheduledAt ? "✅ Đã lên lịch!" : "✅ Đã lưu bản nháp!"));
       router.replace("/admin/dashboard");
     } catch (err) {
       console.error(err);
