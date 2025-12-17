@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { FiTrash2, FiSend } from "react-icons/fi";
 import Link from "next/link";
 import UserAvatar from "./UserAvatar";
+import FunTechLoader from "./FunTechLoader";
 
 interface Comment {
   id: string;
@@ -171,12 +172,7 @@ export default function Comments({ postId }: CommentsProps) {
       {/* Comments List */}
       <div className="mt-8 space-y-6">
         {loading ? (
-          <div className="text-center py-8">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Đang tải bình luận...
-            </p>
-          </div>
+          <FunTechLoader />
         ) : comments.length === 0 ? (
           <p className="text-center text-gray-500 dark:text-gray-400 py-8">
             Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
