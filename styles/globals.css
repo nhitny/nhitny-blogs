@@ -16,6 +16,32 @@
   animation: marquee 30s linear infinite;
 }
 
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 3s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+.animate-float-slow {
+  animation: float 4s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -113,20 +139,36 @@ a {
 
 /* --- FORCED DARK MODE TEXT FIX --- */
 /* Đảm bảo văn bản luôn hiển thị màu sáng trong chế độ tối, bất kể inline style */
+.dark .prose {
+  color: #f3f4f6 !important;
+}
+
 .dark .prose p,
 .dark .prose li,
 .dark .prose strong,
 .dark .prose h1,
 .dark .prose h2,
 .dark .prose h3,
-.dark .prose h4 {
-  color: #e5e7eb !important;
-  /* gray-200 */
+.dark .prose h4,
+.dark .prose h5,
+.dark .prose h6 {
+  color: #f3f4f6 !important;
+}
+
+/* Override inline styles on spans (often from editors) but avoid replacing code block colors */
+.dark .prose p span,
+.dark .prose li span,
+.dark .prose blockquote span {
+  color: #f3f4f6 !important;
 }
 
 .dark .prose a {
   color: #60a5fa !important;
-  /* blue-400 */
+}
+
+/* Restore code block colors if they were overridden above */
+.dark .prose pre span {
+  color: inherit !important;
 }
 
 /* ===========================

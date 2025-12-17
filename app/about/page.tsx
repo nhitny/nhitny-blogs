@@ -83,22 +83,49 @@ export default function AboutPage() {
             Kỹ năng & Công nghệ
           </h2>
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
-            {skills.map((skill) => (
-              <div
-                key={skill.name}
-                className="flex flex-col items-center justify-center rounded-xl bg-white p-6 shadow-sm transition hover:scale-105 hover:shadow-md dark:bg-gray-800"
-              >
-                <div className="mb-4 text-3xl text-indigo-600 dark:text-indigo-400">
-                  {skill.icon}
+            {skills.map((skill, index) => {
+              // Chọn animation ngẫu nhiên để tạo hiệu ứng không đồng đều
+              const animations = [
+                "animate-float",
+                "animate-float-delayed",
+                "animate-float-slow"
+              ];
+              const animationClass = animations[index % animations.length];
+
+              // Gradient viền màu mè
+              const gradients = [
+                "from-blue-400 to-indigo-500",
+                "from-purple-400 to-pink-500",
+                "from-green-400 to-emerald-500",
+                "from-orange-400 to-red-500",
+                "from-cyan-400 to-blue-500",
+                "from-yellow-400 to-orange-500"
+              ];
+              const gradientClass = gradients[index % gradients.length];
+
+              return (
+                <div
+                  key={skill.name}
+                  className={`relative group flex flex-col items-center justify-center rounded-xl bg-white p-6 shadow-sm transition-all hover:scale-110 hover:shadow-xl dark:bg-gray-800 ${animationClass}`}
+                >
+                  {/* Viền gradient ẩn, hiện khi hover */}
+                  <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${gradientClass} opacity-0 transition-opacity duration-300 group-hover:opacity-10 -z-10`}></div>
+                  <div className={`absolute -inset-[1px] rounded-xl bg-gradient-to-br ${gradientClass} opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-20 blur-sm`}></div>
+
+                  <div className={`mb-4 text-4xl transition-transform duration-300 group-hover:rotate-12 bg-gradient-to-br ${gradientClass} bg-clip-text text-transparent`}>
+                    <span className="text-gray-800 dark:text-white group-hover:text-transparent transition-colors duration-300">
+                      {skill.icon}
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-bold text-gray-900 group-hover:scale-105 transition-transform dark:text-gray-100">
+                    {skill.name}
+                  </h3>
+                  <span className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                    {skill.category}
+                  </span>
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                  {skill.name}
-                </h3>
-                <span className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  {skill.category}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
