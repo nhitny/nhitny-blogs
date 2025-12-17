@@ -44,6 +44,8 @@ export default function EditPostPage() {
       const [checkingAuth, setCheckingAuth] = useState(true);
       const [loading, setLoading] = useState(true);
       const [editorQuill, setEditorQuill] = useState<any>(null);
+      const [saving, setSaving] = useState(false);
+      const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
       const [form, setForm] = useState<PostForm>({
             title: "",
@@ -129,6 +131,41 @@ export default function EditPostPage() {
             loadPost();
       }, [postId, checkingAuth, router]);
 
+      // Auto-save with debounce
+      useEffect(() => {
+            if (!postId || checkingAuth || loading) return;
+
+            const timer = setTimeout(async () => {
+                  try {
+                        setSaving(true);
+                        const payload: any = {
+                              title: form.title || "Untitled",
+                              slug: form.slug || slugify(form.title || `post-${Date.now()}`),
+                              description: form.description ?? "",
+                              headerImage: form.headerImage ?? "",
+                              tags: form.tags ?? [],
+                              author: form.author ?? "",
+                              content: form.content,
+                              isPublished: form.isPublished,
+                        };
+
+                        if (form.scheduledAt) {
+                              payload.scheduledAt = Timestamp.fromDate(new Date(form.scheduledAt));
+                        }
+
+                        await updateDoc(doc(db, "posts", postId), payload);
+                        setLastSaved(new Date());
+                        console.log("💾 Auto-saved");
+                  } catch (err) {
+                        console.error("Auto-save failed:", err);
+                  } finally {
+                        setSaving(false);
+                  }
+            }, 2000); // Debounce 2 seconds
+
+            return () => clearTimeout(timer);
+      }, [form, postId, checkingAuth, loading]);
+
       // Upload ảnh -> URL
       const uploadImage = async (file: File) => {
             const r = ref(storage, `images/${Date.now()}-${file.name}`);
@@ -185,7 +222,11 @@ export default function EditPostPage() {
                   ) : (
                         <>
                               <div className="mb-8 flex items-center justify-between">
-                                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">✏️ Sửa bài viết</h1>
+                                    <div>
+                                          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">✏️ Sửa bài viết</h1>
+                                          {saving && <p className="text-sm text-gray-500 mt-1">💾 Đang lưu...</p>}
+                                          {!saving && lastSaved && <p className="text-sm text-green-600 mt-1">✅ Đã lưu lúc {lastSaved.toLocaleTimeString('vi-VN')}</p>}
+                                    </div>
                                     <Link href="/admin/dashboard" className="flex items-center text-indigo-500 hover:text-indigo-600 font-medium transition-colors">
                                           ← Quay lại Dashboard
                                     </Link>
