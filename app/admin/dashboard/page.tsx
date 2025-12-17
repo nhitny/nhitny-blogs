@@ -14,7 +14,7 @@ import {
   query,
   deleteDoc,
 } from "firebase/firestore";
-import ThemeToggle from "@/components/ThemeToggle";
+
 
 type Post = {
   id: string;
@@ -111,30 +111,18 @@ export default function AdminDashboard() {
   return (
     <div className="mx-auto max-w-6xl p-6">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <Link href="/blogs" className="text-indigo-400 hover:underline">
-          ← Quay lại Blog
+      {/* Header */}
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          📘 Quản lý bài viết
+        </h1>
+        <Link
+          href="/admin/new"
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/30"
+        >
+          + Viết bài mới
         </Link>
-        <div className="flex items-center gap-4">
-          <ThemeToggle />
-          <Link
-            href="/admin/new"
-            className="rounded bg-indigo-600 px-3 py-1 text-white hover:bg-indigo-500"
-          >
-            + Viết bài mới
-          </Link>
-          <button
-            onClick={() => fetchPosts()}
-            className="text-sm text-gray-500 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            Refresh
-          </button>
-        </div>
       </div>
-
-      <h1 className="mb-6 text-3xl font-bold text-gray-900 dark:text-gray-100">
-        📘 Admin — Quản lý bài viết
-      </h1>
 
       {loading ? (
         <div className="p-6 text-center text-gray-400">Đang tải dữ liệu…</div>
