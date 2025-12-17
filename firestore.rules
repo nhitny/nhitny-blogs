@@ -24,14 +24,22 @@ service cloud.firestore {
       // Allow update for admin OR for incrementing views/likes/commentsCount
       allow update: if isAdmin() || 
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'commentsCount']));
+
+      // COMMENTS (Sub-collection)
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isSignedIn();
+        allow update, delete: if isAdmin() ||
+          (isSignedIn() && request.auth.uid == resource.data.userId);
+      }
     }
 
-    // COMMENTS (top-level)
+    // COMMENTS (top-level) - Keep for backward compatibility if needed, or remove
     match /comments/{commentId} {
       allow read: if true;
       allow create: if isSignedIn();
       allow update, delete: if isAdmin() ||
-        (isSignedIn() && request.auth.uid == resource.data.uid);
+        (isSignedIn() && request.auth.uid == resource.data.userId); // Changed uid to userId to match code
     }
 
     // LIKES (top-level)
