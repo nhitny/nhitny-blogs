@@ -96,6 +96,7 @@ export default function AdminDashboard() {
       }
     });
     return () => unsub();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   // 🔄 Lấy danh sách bài viết
@@ -380,7 +381,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{c.userDisplayName || "Anonymous"}</p>
-                      <p className="text-xs text-gray-500 line-clamp-2 italic">"{c.content}"</p>
+                      <p className="text-xs text-gray-500 line-clamp-2 italic">&quot;{c.content}&quot;</p>
                       <p className="text-[10px] text-gray-400 mt-1">{c.createdAt?.seconds ? new Date(c.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Just now'}</p>
                     </div>
                   </div>
