@@ -20,15 +20,18 @@ export default function Navbar() {
   useEffect(() => {
     setMounted(true);
 
-    // Close menu when clicking outside
-    function handleClickOutside(event: MouseEvent) {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false);
       }
-    }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, []);
 
