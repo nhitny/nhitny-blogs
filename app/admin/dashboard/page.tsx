@@ -154,8 +154,11 @@ export default function AdminDashboard() {
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Ngày
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 min-w-[140px]">
                   Trạng thái
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  Giờ hẹn
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Hành động
@@ -176,24 +179,35 @@ export default function AdminDashboard() {
                       ? new Date(p.date).toLocaleString("vi-VN")
                       : "-"}
                   </td>
-                  <td className="px-4 py-3 text-sm">
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">
                     {p.isPublished ? (
-                      <span className="inline-flex items-center rounded-full bg-green-600/20 px-2 py-0.5 text-green-400">
+                      <span className="inline-flex items-center rounded-full bg-green-600/20 px-3 py-1 text-green-400">
                         Published
                       </span>
                     ) : (p.scheduledAt && new Date(p.scheduledAt) <= new Date()) ? (
-                      <span className="inline-flex items-center rounded-full bg-green-600/20 px-2 py-0.5 text-green-400">
+                      <span className="inline-flex items-center rounded-full bg-green-600/20 px-3 py-1 text-green-400">
                         Published (Auto)
                       </span>
                     ) : (p.scheduledAt && new Date(p.scheduledAt) > new Date()) ? (
-                      <span className="inline-flex items-center rounded-full bg-blue-600/20 px-2 py-0.5 text-blue-400">
+                      <span className="inline-flex items-center rounded-full bg-blue-600/20 px-3 py-1 text-blue-400">
                         Scheduled
                       </span>
                     ) : (
-                      <span className="inline-flex items-center rounded-full bg-yellow-600/20 px-2 py-0.5 text-yellow-400">
+                      <span className="inline-flex items-center rounded-full bg-yellow-600/20 px-3 py-1 text-yellow-400">
                         Draft
                       </span>
                     )}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                    {p.scheduledAt
+                      ? new Date(p.scheduledAt).toLocaleString("vi-VN", {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                      : "-"}
                   </td>
                   <td className="px-4 py-3 text-sm flex gap-2">
                     {p.slug ? (

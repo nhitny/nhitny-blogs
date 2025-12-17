@@ -27,6 +27,11 @@ export async function getAllBlogPosts() {
           date: data?.date?.toDate ? data.date.toDate().toISOString() : data?.date ?? null,
           scheduledAt: data?.scheduledAt?.toDate ? data.scheduledAt.toDate().toISOString() : null,
           createdAt: data?.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data?.createdAt ?? null,
+          views: data?.views || 0,
+          likes: data?.likes || 0,
+          commentsCount: data?.commentsCount || 0,
+          tags: data?.tags || [],
+          author: data?.author || null,
         });
       });
     } catch (err) {
@@ -61,6 +66,11 @@ export async function getAllBlogPosts() {
               date: data?.date?.toDate ? data.date.toDate().toISOString() : data?.date ?? null,
               scheduledAt: scheduledAt.toISOString(),
               createdAt: data?.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data?.createdAt ?? null,
+              views: data?.views || 0,
+              likes: data?.likes || 0,
+              commentsCount: data?.commentsCount || 0,
+              tags: data?.tags || [],
+              author: data?.author || null,
             });
           } else {
             console.log(`[DEBUG] ✗ Skipping future scheduled post: "${data.title || d.id}"`);

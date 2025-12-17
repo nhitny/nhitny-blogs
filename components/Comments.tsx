@@ -50,6 +50,22 @@ export default function Comments({ postId }: { postId: string }) {
     setComment("");
     show("success", "Đã gửi bình luận");
     await load();
+
+    // Update comments count in post document
+    try {
+      const { updateDoc, doc: firestoreDoc, collection: firestoreCollection, query: firestoreQuery, where: firestoreWhere, getDocs: firestoreGetDocs } = await import("firebase/firestore");
+      const postsRef = firestoreCollection(db, "posts");
+      const q = firestoreQuery(postsRef, firestoreWhere("slug", "==", postId));
+      const postSnap = await firestoreGetDocs(q);
+      if (!postSnap.empty) {
+        const postDoc = postSnap.docs[0];
+        await updateDoc(firestoreDoc(db, "posts", postDoc.id), {
+          commentsCount: items.length + 1
+        });
+      }
+    } catch (err) {
+      console.error("Error updating post comments count:", err);
+    }
   };
 
   const onDelete = async (id?: string, uid?: string) => {
@@ -58,6 +74,22 @@ export default function Comments({ postId }: { postId: string }) {
     if (!user || user.uid !== uid) return show("error", "Bạn không thể xoá bình luận này");
     await deleteDoc(doc(db, "comments", id));
     await load();
+
+    // Update comments count in post document
+    try {
+      const { updateDoc, doc: firestoreDoc, collection: firestoreCollection, query: firestoreQuery, where: firestoreWhere, getDocs: firestoreGetDocs } = await import("firebase/firestore");
+      const postsRef = firestoreCollection(db, "posts");
+      const q = firestoreQuery(postsRef, firestoreWhere("slug", "==", postId));
+      const postSnap = await firestoreGetDocs(q);
+      if (!postSnap.empty) {
+        const postDoc = postSnap.docs[0];
+        await updateDoc(firestoreDoc(db, "posts", postDoc.id), {
+          commentsCount: Math.max(0, items.length - 1)
+        });
+      }
+    } catch (err) {
+      console.error("Error updating post comments count:", err);
+    }
   };
 
   return (

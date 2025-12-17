@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -23,6 +23,7 @@ type PostForm = {
   description?: string;
   headerImage?: string;
   tags: string[];
+  author?: string;
   content: string;
   isPublished: boolean;
   scheduledAt: string; // datetime-local string (optional)
@@ -46,6 +47,7 @@ export default function NewPostPage() {
     description: "",
     headerImage: "",
     tags: [],
+    author: "",
     content: "",
     isPublished: false,
     scheduledAt: "",
@@ -92,7 +94,6 @@ export default function NewPostPage() {
     editorQuill.setSelection((range ? range.index : 0) + 1);
   };
 
-  const tagsText = useMemo(() => (form.tags ?? []).join(", "), [form.tags]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,9 +107,13 @@ export default function NewPostPage() {
       description: form.description ?? "",
       headerImage: form.headerImage ?? "",
       tags: form.tags ?? [],
+      author: form.author ?? "",
       content: form.content,
       isPublished: form.isPublished,
       date: serverTimestamp(),
+      views: 0,
+      likes: 0,
+      commentsCount: 0,
     };
 
     if (form.scheduledAt) {
@@ -192,16 +197,47 @@ export default function NewPostPage() {
               />
             </div>
 
+            {/* Tags Input */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                {form.tags.map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 rounded-md bg-blue-50 px-2.5 py-1.5 text-sm font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                  >
+                    🏷️ {tag}
+                    <button
+                      type="button"
+                      onClick={() => setForm(s => ({ ...s, tags: s.tags.filter((_, i) => i !== idx) }))}
+                      className="ml-1 text-blue-700 hover:text-blue-900 dark:text-blue-300 dark:hover:text-blue-100"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <input
+                className="w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                placeholder="Nhập tag và nhấn Enter để thêm"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const input = e.currentTarget;
+                    const newTag = input.value.trim();
+                    if (newTag && !form.tags.includes(newTag)) {
+                      setForm(s => ({ ...s, tags: [...s.tags, newTag] }));
+                      input.value = '';
+                    }
+                  }
+                }}
+              />
+            </div>
+
             <input
               className="w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
-              placeholder="Tags (phân cách bằng dấu phẩy)"
-              value={tagsText}
-              onChange={(e) =>
-                setForm(s => ({
-                  ...s,
-                  tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean),
-                }))
-              }
+              placeholder="Tên tác giả"
+              value={form.author}
+              onChange={(e) => setForm(s => ({ ...s, author: e.target.value }))}
             />
 
             <div className="flex items-center gap-2">

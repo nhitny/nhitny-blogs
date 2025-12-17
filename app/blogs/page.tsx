@@ -39,8 +39,8 @@ export default async function BlogsPage() {
       </section>
 
       {/* GRID */}
-      <main className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+      <main className="mx-auto max-w-[1400px] px-6 pb-20">
+        <div className="grid grid-cols-1 gap-x-3 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {blogs.map((b: any) => (
             <BlogHeader key={b.id} data={b} />
           ))}

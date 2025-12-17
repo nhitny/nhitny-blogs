@@ -19,7 +19,11 @@ service cloud.firestore {
       allow read: if true;
 
       // Only admin can write
-      allow create, update, delete: if isAdmin();
+      allow create, delete: if isAdmin();
+      
+      // Allow update for admin OR for incrementing views/likes/commentsCount
+      allow update: if isAdmin() || 
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'commentsCount']));
     }
 
     // COMMENTS (top-level)

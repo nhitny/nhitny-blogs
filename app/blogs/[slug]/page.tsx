@@ -75,6 +75,17 @@ export default function BlogSlugPage({
             const { html, headings } = addHeadingIds(data.content || "");
             setContentHtml(html);
             setHeadings(headings);
+
+            // Increment view count
+            try {
+              const { updateDoc, doc: firestoreDoc, increment } = await import("firebase/firestore");
+              await updateDoc(firestoreDoc(db, "posts", snap.docs[0].id), {
+                views: increment(1)
+              });
+            } catch (err) {
+              console.error("Error updating view count:", err);
+            }
+
             return;
           }
         }

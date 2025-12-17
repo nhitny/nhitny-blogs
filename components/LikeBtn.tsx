@@ -31,6 +31,23 @@ export default function LikeBtn({ postId }: { postId: string }) {
       await addDoc(likesRef, { postId, uid: user.uid, createdAt: new Date() });
     }
     await load();
+
+    // Update likes count in post document
+    try {
+      const { updateDoc, doc: firestoreDoc, collection: firestoreCollection, query: firestoreQuery, where: firestoreWhere, getDocs: firestoreGetDocs } = await import("firebase/firestore");
+      const postsRef = firestoreCollection(db, "posts");
+      const q = firestoreQuery(postsRef, firestoreWhere("slug", "==", postId));
+      const postSnap = await firestoreGetDocs(q);
+      if (!postSnap.empty) {
+        const postDoc = postSnap.docs[0];
+        await updateDoc(firestoreDoc(db, "posts", postDoc.id), {
+          likes: totalLikes + (hasUserLiked ? -1 : 1)
+        });
+      }
+    } catch (err) {
+      console.error("Error updating post likes count:", err);
+    }
+
     setLoading(false);
   };
 
