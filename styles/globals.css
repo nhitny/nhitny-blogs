@@ -61,6 +61,29 @@ a {
   @apply prose-invert max-w-none;
 }
 
+/* Căn giữa caption của hình ảnh */
+.prose figure {
+  @apply text-center;
+}
+
+.prose figcaption {
+  @apply text-center text-sm text-gray-600 dark:text-gray-400 mt-2;
+}
+
+.prose img {
+  @apply mx-auto;
+}
+
+/* Caption được thêm bởi JavaScript */
+.prose .image-caption {
+  @apply text-center text-sm text-gray-600 dark:text-gray-400 mt-2 mb-4;
+}
+
+/* Căn giữa các paragraph chứa "Hình X:" trong bài viết đã publish */
+.prose p[style*="text-align: center"] {
+  text-align: center !important;
+}
+
 /* Thanh phân cách mờ giữa các section */
 .prose h2 {
   @apply pt-8 mt-8 border-t border-gray-200 dark:border-gray-700;
@@ -98,6 +121,47 @@ a {
   background-color: white !important;
   border-bottom: 1px solid #ccc !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Tooltips for all toolbar buttons - show below */
+.ql-toolbar button {
+  position: relative;
+}
+
+.ql-toolbar button::after {
+  content: attr(title);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: #333;
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  margin-top: 5px;
+  z-index: 1000;
+}
+
+.ql-toolbar button:hover::after {
+  opacity: 1;
+}
+
+/* Custom tooltips for buttons without title attribute */
+.ql-toolbar .ql-inline-math::after {
+  content: "Công thức inline ($...$)";
+}
+
+.ql-toolbar .ql-block-math::after {
+  content: "Công thức block ($$...$$)";
+}
+
+.ql-toolbar .ql-number-images::after {
+  content: "Đánh số hình tự động";
 }
 
 /* Code block styling */

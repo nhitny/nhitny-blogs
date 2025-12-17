@@ -40,6 +40,14 @@ function addHeadingIds(html: string): { html: string; headings: HeadingItem[] } 
   return { html: container.innerHTML, headings };
 }
 
+// Tính thời gian đọc (giả định 200 từ/phút)
+function calculateReadingTime(html: string): number {
+  if (!html) return 0;
+  const text = html.replace(/<[^>]*>/g, ' '); // Remove HTML tags
+  const words = text.trim().split(/\s+/).length;
+  return Math.ceil(words / 200);
+}
+
 export default function BlogSlugPage({
   params,
 }: {
@@ -210,6 +218,49 @@ export default function BlogSlugPage({
     });
   }, [contentHtml]);
 
+  // Center image captions
+  useEffect(() => {
+    if (!contentHtml) return;
+
+    const article = document.querySelector('article.prose');
+    if (!article) return;
+
+    // Find all paragraphs and check for figure captions
+    const paragraphs = article.querySelectorAll('p');
+    paragraphs.forEach((p) => {
+      const text = p.textContent?.trim() || '';
+
+      // Check if paragraph contains "Hình X:" pattern
+      if (text.match(/^Hình \d+:/)) {
+        (p as HTMLElement).style.textAlign = 'center';
+        (p as HTMLElement).style.fontSize = '0.875rem';
+        (p as HTMLElement).style.color = '#6b7280';
+        p.classList.add('image-caption');
+      }
+    });
+
+    // Find all images in the article
+    const images = article.querySelectorAll('img');
+    images.forEach((img) => {
+      // Get the next sibling element
+      let nextElement = img.nextElementSibling;
+
+      // If image is in a paragraph, get the paragraph's next sibling
+      if (img.parentElement?.tagName === 'P') {
+        nextElement = img.parentElement.nextElementSibling;
+      }
+
+      // If next element is a paragraph with text (likely a caption)
+      if (nextElement && nextElement.tagName === 'P') {
+        const text = nextElement.textContent?.trim();
+        // Only treat as caption if it's relatively short (< 200 chars) and doesn't start with common paragraph starters
+        if (text && text.length < 200 && !text.match(/^(Như|Theo|Trong|Để|Khi|Vì|Do|Nếu|Tuy|Mặc)/)) {
+          nextElement.classList.add('image-caption');
+        }
+      }
+    });
+  }, [contentHtml]);
+
   // Chuẩn hoá tags: chấp nhận array hoặc string (cách nhau bởi , hoặc space)
   const tags: string[] = useMemo(() => {
     if (!post?.tags) return post?.topic ? [post.topic] : [];
@@ -219,6 +270,11 @@ export default function BlogSlugPage({
       .map((s: string) => s.trim())
       .filter(Boolean);
   }, [post]);
+
+  // Tính thời gian đọc
+  const readingTime = useMemo(() => {
+    return calculateReadingTime(post?.content || "");
+  }, [post?.content]);
 
   if (!post) return <p className="p-6">Đang tải bài viết...</p>;
 
@@ -244,34 +300,105 @@ export default function BlogSlugPage({
             />
           )}
 
-          {/* Tags */}
+          {/* Tags ở đầu */}
           {tags.length > 0 && (
-            <div className="mb-3 flex flex-wrap gap-2">
+            <div className="mb-4 flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-block rounded-full bg-indigo-500 px-3 py-1 text-xs font-semibold tracking-wider text-white dark:bg-indigo-600"
+                  className="inline-block rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                 >
-                  {tag}
+                  #{tag}
                 </span>
               ))}
             </div>
           )}
 
+          {/* Stats bar: Reading time, Views, Likes, Comments */}
+          <div className="mb-4 flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-1">
+              <span>🕐</span>
+              <span>{readingTime} phút đọc</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span>👁️</span>
+              <span>{post.views || 0} lượt xem</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span>❤️</span>
+              <span>{post.likes || 0} thích</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span>💬</span>
+              <span>{post.commentsCount || 0} bình luận</span>
+            </div>
+          </div>
+
           {/* Tiêu đề */}
-          <h1 className="mb-2 text-3xl font-extrabold text-gray-900 sm:text-4xl dark:text-gray-100">
+          <h1 className="mb-4 text-3xl font-extrabold text-gray-900 sm:text-4xl dark:text-gray-100">
             {post.title}
           </h1>
 
-          {/* Tóm tắt / mô tả + ngày */}
-          {post.description && (
-            <p className="mb-3 text-gray-600 dark:text-gray-400">{post.description}</p>
+          {/* Author info và dates */}
+          <div className="mb-6 flex flex-wrap items-center gap-4 text-sm">
+            {post.student && (
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-900 dark:text-gray-100">{post.student}</span>
+                {post.author && (
+                  <span className="text-gray-600 dark:text-gray-400">• Tác giả chính</span>
+                )}
+              </div>
+            )}
+            <div className="flex flex-wrap items-center gap-2 text-gray-600 dark:text-gray-400">
+              {post.date && (
+                <span>
+                  Xuất bản: {post.date?.toDate?.() ? post.date.toDate().toLocaleDateString('vi-VN') : String(post.date)}
+                </span>
+              )}
+              {post.updatedAt && (
+                <>
+                  <span>•</span>
+                  <span>
+                    Cập nhật: {post.updatedAt?.toDate?.() ? post.updatedAt.toDate().toLocaleDateString('vi-VN') : String(post.updatedAt)}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Metadata Section (Nhóm, Học viên, Lớp, Ngày) */}
+          {(post.group || post.student || post.class || post.assignmentDate) && (
+            <div className="mb-8 border-l-4 border-gray-300 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800">
+              <h2 className="mb-3 text-xl font-bold text-gray-900 dark:text-gray-100">
+                {post.title}
+              </h2>
+              <div className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                {post.group && (
+                  <p>
+                    <span className="font-bold">Nhóm:</span> {post.group}
+                  </p>
+                )}
+                {post.student && (
+                  <p>
+                    <span className="font-bold">Học viên:</span> {post.student}
+                  </p>
+                )}
+                {post.class && (
+                  <p>
+                    <span className="font-bold">Lớp:</span> {post.class}
+                  </p>
+                )}
+                {post.assignmentDate && (
+                  <p>
+                    <span className="font-bold">Ngày:</span>{" "}
+                    {post.assignmentDate?.toDate?.()
+                      ? post.assignmentDate.toDate().toLocaleDateString('vi-VN')
+                      : post.assignmentDate}
+                  </p>
+                )}
+              </div>
+            </div>
           )}
-          <p className="mb-8 text-sm text-gray-500">
-            {post.date?.toDate?.()
-              ? post.date.toDate().toLocaleString()
-              : post.date}
-          </p>
 
           {/* Dấu chấm giống "..." */}
           <div className="mb-6 text-center text-3xl text-gray-400 dark:text-gray-600">• • •</div>

@@ -27,6 +27,7 @@ export default function RichText({ value, onChange, placeholder, onReady }: Prop
         const icons: any = Quill.import('ui/icons');
         icons['inline-math'] = '<span style="font-size: 18px;">📐</span>';
         icons['block-math'] = '<span style="font-size: 18px;">📊</span>';
+        icons['number-images'] = '<span style="font-size: 18px;">🔢</span>';
         iconsRegistered.current = true;
       } catch (e) {
         console.error('Failed to register icons:', e);
@@ -44,7 +45,7 @@ export default function RichText({ value, onChange, placeholder, onReady }: Prop
         [{ list: "ordered" }, { list: "bullet" }],
         ["link", "image", "code-block"],
         [{ align: [] }],
-        ["inline-math", "block-math"], // Custom buttons
+        ["inline-math", "block-math", "number-images"], // Custom buttons
         ["clean"],
       ],
       handlers: {
@@ -63,6 +64,67 @@ export default function RichText({ value, onChange, placeholder, onReady }: Prop
             quill.insertText(range.index, "\n$$\n\n$$\n", "user");
             quill.setSelection(range.index + 4, 0);
           }
+        },
+        "number-images": function (this: any) {
+          const quill = this.quill;
+          const range = quill.getSelection();
+
+          if (!range) {
+            alert('Vui lòng đặt con trỏ hoặc bôi đen text muốn thêm caption');
+            return;
+          }
+
+          // Scan the entire content to find all existing figure numbers
+          const content = quill.getText();
+          const figureMatches = content.matchAll(/Hình (\d+):/g);
+          const existingNumbers = new Set<number>();
+
+          for (const match of figureMatches) {
+            const num = parseInt(match[1]);
+            existingNumbers.add(num);
+          }
+
+          // Find the smallest missing number
+          let nextNumber = 1;
+          while (existingNumbers.has(nextNumber)) {
+            nextNumber++;
+          }
+
+          // Insert the caption text at the beginning of selection
+          const captionText = `Hình ${nextNumber}: `;
+          quill.insertText(range.index, captionText, 'user');
+
+          // Apply text formatting to the caption part only
+          quill.formatText(range.index, captionText.length, {
+            size: 'small',
+            color: '#6b7280'
+          });
+
+          // Apply center alignment to the entire line using Quill API
+          quill.formatLine(range.index, 1, {
+            align: 'center'
+          });
+
+          // Use DOM manipulation to ensure centering works (increased delay)
+          setTimeout(() => {
+            const editor = quill.root;
+            const paragraphs = editor.querySelectorAll('p');
+
+            // Find the paragraph containing our caption
+            paragraphs.forEach((p: HTMLElement) => {
+              const text = p.textContent || '';
+              if (text.includes(`Hình ${nextNumber}:`)) {
+                p.style.textAlign = 'center';
+                p.style.fontSize = '0.875rem';
+                p.style.color = '#6b7280';
+                // Force center with !important via setAttribute
+                p.setAttribute('style', 'text-align: center !important; font-size: 0.875rem; color: #6b7280;');
+              }
+            });
+          }, 200);
+
+          // Move cursor to after the caption text
+          quill.setSelection(range.index + captionText.length);
         },
       },
     },

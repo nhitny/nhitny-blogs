@@ -3,6 +3,7 @@ import "katex/dist/katex.min.css";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className={inter.className} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
+          <ScrollToTop />
         </ThemeProvider>
       </body>
     </html>

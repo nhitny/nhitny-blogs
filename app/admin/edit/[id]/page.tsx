@@ -177,9 +177,9 @@ export default function EditPostPage() {
       };
 
       return (
-            <div className="mx-auto max-w-5xl p-6">
+            <div className="mx-auto max-w-5xl p-6" suppressHydrationWarning>
                   {checkingAuth || loading ? (
-                        <div className="p-10 text-center text-gray-400">
+                        <div className="p-10 text-center text-gray-400" suppressHydrationWarning>
                               {checkingAuth ? "Đang kiểm tra quyền…" : "Đang tải bài viết…"}
                         </div>
                   ) : (
