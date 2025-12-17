@@ -10,7 +10,7 @@ import {
       doc, getDoc, updateDoc, serverTimestamp, Timestamp,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import ThemeToggle from "@/components/ThemeToggle";
+
 
 const RichText = dynamic(() => import("@/components/RichText"), {
       ssr: false,
@@ -184,19 +184,12 @@ export default function EditPostPage() {
                         </div>
                   ) : (
                         <>
-                              <div className="mb-6 flex items-center justify-between">
-                                    <Link href="/admin/dashboard" className="text-indigo-400 hover:underline">
-                                          ← Back to Dashboard
+                              <div className="mb-8 flex items-center justify-between">
+                                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">✏️ Sửa bài viết</h1>
+                                    <Link href="/admin/dashboard" className="flex items-center text-indigo-500 hover:text-indigo-600 font-medium transition-colors">
+                                          ← Quay lại Dashboard
                                     </Link>
-                                    <div className="flex items-center gap-4">
-                                          <ThemeToggle />
-                                          <Link href="/blogs" className="text-indigo-400 hover:underline">
-                                                ← Back to Blog
-                                          </Link>
-                                    </div>
                               </div>
-
-                              <h1 className="mb-6 text-3xl font-bold text-gray-900 dark:text-gray-100">✏️ Sửa bài viết</h1>
 
                               <form onSubmit={handleSubmit} className="space-y-4 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900/50">
                                     <input
