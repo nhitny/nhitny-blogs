@@ -14,6 +14,7 @@ import {
   query,
   deleteDoc,
 } from "firebase/firestore";
+import ConfirmModal from "@/components/ConfirmModal";
 
 
 type Post = {
@@ -84,13 +85,21 @@ export default function AdminDashboard() {
     setLoading(false);
   };
 
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    postId: "",
+    postTitle: "",
+  });
+
   // ❌ Xóa bài viết
-  const handleDelete = async (id: string, title?: string) => {
-    const confirmDelete = confirm(`Bạn có chắc muốn xóa bài "${title}"?`);
-    if (!confirmDelete) return;
+  const handleDeleteClick = (id: string, title?: string) => {
+    setDeleteModal({ isOpen: true, postId: id, postTitle: title || "Bài viết này" });
+  };
+
+  const onConfirmDelete = async () => {
     try {
-      await deleteDoc(doc(db, "posts", id));
-      alert("🗑️ Đã xóa bài viết!");
+      await deleteDoc(doc(db, "posts", deleteModal.postId));
+      setDeleteModal((prev) => ({ ...prev, isOpen: false }));
       await fetchPosts();
     } catch (err) {
       console.error(err);
@@ -110,7 +119,14 @@ export default function AdminDashboard() {
 
   return (
     <div className="mx-auto max-w-6xl p-6">
-      {/* Header */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        title="Xóa bài viết"
+        message={`Bạn có chắc chắn muốn xóa bài viết "${deleteModal.postTitle}"? Hành động này không thể hoàn tác.`}
+        onConfirm={onConfirmDelete}
+        onCancel={() => setDeleteModal((prev) => ({ ...prev, isOpen: false }))}
+      />
+
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
@@ -216,7 +232,7 @@ export default function AdminDashboard() {
                       Sửa
                     </Link>
                     <button
-                      onClick={() => handleDelete(p.id, p.title)}
+                      onClick={() => handleDeleteClick(p.id, p.title || "")}
                       className="text-red-400 hover:underline"
                     >
                       Xóa
