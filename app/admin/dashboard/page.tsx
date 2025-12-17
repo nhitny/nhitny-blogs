@@ -13,9 +13,11 @@ import {
   orderBy,
   query,
   deleteDoc,
+  collectionGroup,
+  limit,
 } from "firebase/firestore";
 import ConfirmModal from "@/components/ConfirmModal";
-
+import { FiHeart, FiEye, FiMessageSquare, FiTrendingUp, FiLayers, FiActivity, FiCalendar } from "react-icons/fi";
 
 type Post = {
   id: string;
@@ -25,6 +27,20 @@ type Post = {
   date?: any; // Firestore Timestamp | ISO | string
   isPublished?: boolean;
   scheduledAt?: any; // Firestore Timestamp | ISO | string
+  views?: number;
+  likes?: number;
+  commentsCount?: number;
+  tags?: string[];
+};
+
+type Comment = {
+  id: string;
+  content: string;
+  createdAt: any;
+  userDisplayName?: string;
+  userPhoto?: string;
+  userId?: string;
+  postId?: string; // Implicitly from parent, but helpful if we can get it
 };
 
 export default function AdminDashboard() {
@@ -33,6 +49,22 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState<Post[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [recentComments, setRecentComments] = useState<Comment[]>([]);
+
+  // Stats
+  const [stats, setStats] = useState({
+    totalPosts: 0,
+    totalViews: 0,
+    totalLikes: 0,
+    totalComments: 0,
+    topicsCount: 0,
+    topLiked: null as Post | null,
+    topViewed: null as Post | null,
+    topDiscussed: null as Post | null,
+  });
+
+  // Topics breakdown
+  const [topicsBreakdown, setTopicsBreakdown] = useState<Record<string, number>>({});
 
   // Fix hydration mismatch
   useEffect(() => {
@@ -58,7 +90,7 @@ export default function AdminDashboard() {
           return;
         }
 
-        await fetchPosts();
+        await Promise.all([fetchPosts(), fetchRecentComments()]);
       } finally {
         setCheckingAuth(false);
       }
@@ -82,7 +114,61 @@ export default function AdminDashboard() {
       return { id: d.id, ...v, date: dateStr, scheduledAt: scheduledStr } as Post;
     });
     setPosts(data);
+    calculateStats(data);
     setLoading(false);
+  };
+
+  const fetchRecentComments = async () => {
+    try {
+      // Note: This requires a composite index in Firestore (Collection Group: comments, Field: createdAt DESC)
+      // If it fails, check console for the index creation link.
+      const q = query(collectionGroup(db, "comments"), orderBy("createdAt", "desc"), limit(5));
+      const snap = await getDocs(q);
+      const comments = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data(),
+        // Extract postId from ref path if needed: d.ref.parent.parent?.id
+        postId: d.ref.parent.parent?.id
+      })) as Comment[];
+      setRecentComments(comments);
+    } catch (e) {
+      console.warn("Error fetching recent comments (likely missing index):", e);
+    }
+  };
+
+  const calculateStats = (posts: Post[]) => {
+    let views = 0;
+    let likes = 0;
+    let comments = 0;
+    const topics: Record<string, number> = {};
+
+    posts.forEach(p => {
+      views += p.views || 0;
+      likes += p.likes || 0;
+      comments += p.commentsCount || 0;
+
+      if (p.tags && Array.isArray(p.tags)) {
+        p.tags.forEach(t => {
+          topics[t] = (topics[t] || 0) + 1;
+        });
+      }
+    });
+
+    const sortedByLikes = [...posts].sort((a, b) => (b.likes || 0) - (a.likes || 0));
+    const sortedByViews = [...posts].sort((a, b) => (b.views || 0) - (a.views || 0));
+    const sortedByComments = [...posts].sort((a, b) => (b.commentsCount || 0) - (a.commentsCount || 0));
+
+    setStats({
+      totalPosts: posts.length,
+      totalViews: views,
+      totalLikes: likes,
+      totalComments: comments,
+      topicsCount: Object.keys(topics).length,
+      topLiked: sortedByLikes[0] || null,
+      topViewed: sortedByViews[0] || null,
+      topDiscussed: sortedByComments[0] || null,
+    });
+    setTopicsBreakdown(topics);
   };
 
   const [deleteModal, setDeleteModal] = useState({
@@ -140,110 +226,183 @@ export default function AdminDashboard() {
         </Link>
       </div>
 
-      {loading ? (
-        <div className="p-6 text-center text-gray-400">Đang tải dữ liệu…</div>
-      ) : posts.length === 0 ? (
-        <p className="text-gray-300">Chưa có bài viết nào.</p>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
-                  Tiêu đề
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
-                  Slug
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
-                  Ngày
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 min-w-[140px]">
-                  Trạng thái
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
-                  Giờ hẹn
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
-                  Hành động
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-800 dark:bg-gray-950">
-              {posts.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
-                    {p.title ?? "(không tiêu đề)"}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-                    {p.slug ?? "-"}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-                    {p.date
-                      ? new Date(p.date).toLocaleString("vi-VN")
-                      : "-"}
-                  </td>
-                  <td className="px-4 py-3 text-sm whitespace-nowrap">
-                    {p.isPublished ? (
-                      <span className="inline-flex items-center rounded-full bg-green-600/20 px-3 py-1 text-green-400">
-                        Published
-                      </span>
-                    ) : (p.scheduledAt && new Date(p.scheduledAt) <= new Date()) ? (
-                      <span className="inline-flex items-center rounded-full bg-green-600/20 px-3 py-1 text-green-400">
-                        Published (Auto)
-                      </span>
-                    ) : (p.scheduledAt && new Date(p.scheduledAt) > new Date()) ? (
-                      <span className="inline-flex items-center rounded-full bg-blue-600/20 px-3 py-1 text-blue-400">
-                        Scheduled
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center rounded-full bg-yellow-600/20 px-3 py-1 text-yellow-400">
-                        Draft
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-                    {p.scheduledAt
-                      ? new Date(p.scheduledAt).toLocaleString("vi-VN", {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })
-                      : "-"}
-                  </td>
-                  <td className="px-4 py-3 text-sm flex gap-2">
-                    {p.slug ? (
-                      <Link
-                        href={`/blogs/${p.slug}`}
-                        target="_blank"
-                        className="text-indigo-400 hover:underline"
-                      >
-                        Xem
-                      </Link>
-                    ) : (
-                      <span className="text-gray-500">—</span>
-                    )}
-                    <Link
-                      href={`/admin/edit/${p.id}`}
-                      className="text-blue-400 hover:underline"
-                    >
-                      Sửa
-                    </Link>
-                    <button
-                      onClick={() => handleDeleteClick(p.id, p.title || "")}
-                      className="text-red-400 hover:underline"
-                    >
-                      Xóa
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-8">
+        <div className="rounded-xl bg-white p-4 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+          <div className="flex items-center gap-3 text-indigo-500 mb-2">
+            <div className="p-2 bg-indigo-50 rounded-lg dark:bg-indigo-900/20"><FiLayers size={20} /></div>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Posts</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalPosts}</p>
         </div>
-      )}
-    </div>
-  );
-}
+        <div className="rounded-xl bg-white p-4 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+          <div className="flex items-center gap-3 text-pink-500 mb-2">
+            <div className="p-2 bg-pink-50 rounded-lg dark:bg-pink-900/20"><FiHeart size={20} /></div>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Likes</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalLikes}</p>
+        </div>
+        <div className="rounded-xl bg-white p-4 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+          <div className="flex items-center gap-3 text-blue-500 mb-2">
+            <div className="p-2 bg-blue-50 rounded-lg dark:bg-blue-900/20"><FiEye size={20} /></div>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Views</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalViews}</p>
+        </div>
+        <div className="rounded-xl bg-white p-4 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+          <div className="flex items-center gap-3 text-emerald-500 mb-2">
+            <div className="p-2 bg-emerald-50 rounded-lg dark:bg-emerald-900/20"><FiMessageSquare size={20} /></div>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Comments</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalComments}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        {/* Top Content */}
+        <div className="lg:col-span-2 space-y-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <FiTrendingUp className="text-yellow-500" /> Top Content
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {stats.topLiked && (
+              <div className="rounded-lg bg-gradient-to-br from-pink-50 to-white p-4 border border-pink-100 dark:from-pink-900/10 dark:to-gray-800 dark:border-pink-900/20">
+                <p className="text-xs font-semibold text-pink-600 uppercase mb-1">Most Liked</p>
+                <div className="font-bold text-gray-900 dark:text-white truncate" title={stats.topLiked.title}>
+                  {stats.topLiked.title}
+                </div>
+                <div className="mt-2 flex items-center gap-1 text-pink-500 font-medium">
+                  <FiHeart /> {stats.topLiked.likes}
+                </div>
+              </div>
+            )}
+            {stats.topViewed && (
+              <div className="rounded-lg bg-gradient-to-br from-blue-50 to-white p-4 border border-blue-100 dark:from-blue-900/10 dark:to-gray-800 dark:border-blue-900/20">
+                <p className="text-xs font-semibold text-blue-600 uppercase mb-1">Most Viewed</p>
+                <div className="font-bold text-gray-900 dark:text-white truncate" title={stats.topViewed.title}>
+                  {stats.topViewed.title}
+                </div>
+                <div className="mt-2 flex items-center gap-1 text-blue-500 font-medium">
+                  <FiEye /> {stats.topViewed.views}
+                </div>
+              </div>
+            )}
+            {stats.topDiscussed && (
+              <div className="rounded-lg bg-gradient-to-br from-emerald-50 to-white p-4 border border-emerald-100 dark:from-emerald-900/10 dark:to-gray-800 dark:border-emerald-900/20">
+                <p className="text-xs font-semibold text-emerald-600 uppercase mb-1">Most Discussed</p>
+                <div className="font-bold text-gray-900 dark:text-white truncate" title={stats.topDiscussed.title}>
+                  {stats.topDiscussed.title}
+                </div>
+                <div className="mt-2 flex items-center gap-1 text-emerald-500 font-medium">
+                  <FiMessageSquare /> {stats.topDiscussed.commentsCount}
+                </div>
+              </div>
+            )}
+            {!stats.topLiked && <div className="text-sm text-gray-500">Chưa có dữ liệu thống kê.</div>}
+          </div>
+
+          {/* Table List */}
+          <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800/50 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">All Posts</h3>
+              <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{posts.length} entries</span>
+            </div>
+            {loading ? (
+              <div className="p-10 text-center text-gray-400">Loading data...</div>
+            ) : posts.length === 0 ? (
+              <div className="p-6 text-center text-gray-400">Không có bài viết nào.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Post</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Metrics</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Status</th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-800 dark:bg-gray-950">
+                    {posts.map((p) => (
+                      <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 group transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[200px]" title={p.title}>{p.title || "(No title)"}</div>
+                          <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                            <span className="flex items-center gap-1"><FiCalendar className="w-3 h-3" /> {p.date ? new Date(p.date).toLocaleDateString('vi-VN') : 'N/A'}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+                            <span className="flex items-center gap-1" title="Views"><FiEye /> {p.views || 0}</span>
+                            <span className="flex items-center gap-1" title="Likes"><FiHeart /> {p.likes || 0}</span>
+                            <span className="flex items-center gap-1" title="Comments"><FiMessageSquare /> {p.commentsCount || 0}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {p.isPublished ? (
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">Published</span>
+                          ) : (p.scheduledAt && new Date(p.scheduledAt) > new Date()) ? (
+                            <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Scheduled</span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Draft</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right text-sm">
+                          <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Link href={`/admin/edit/${p.id}`} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium">Edit</Link>
+                            <button onClick={() => handleDeleteClick(p.id, p.title)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 font-medium">Delete</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Sidebar: Activity & Topics */}
+        <div className="space-y-8">
+          {/* Recent Activity */}
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <h3 className="flex items-center gap-2 font-bold text-gray-900 dark:text-white mb-4">
+              <FiActivity className="text-indigo-500" /> Recent Comments
+            </h3>
+            <div className="space-y-4">
+              {recentComments.length === 0 ? (
+                <div className="text-sm text-gray-500 py-4 text-center italic">No recent comments</div>
+              ) : (
+                recentComments.map(c => (
+                  <div key={c.id} className="flex gap-3 items-start pb-3 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
+                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-600 shrink-0">
+                      {c.userDisplayName ? c.userDisplayName[0].toUpperCase() : 'U'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{c.userDisplayName || "Anonymous"}</p>
+                      <p className="text-xs text-gray-500 line-clamp-2 italic">"{c.content}"</p>
+                      <p className="text-[10px] text-gray-400 mt-1">{c.createdAt?.seconds ? new Date(c.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Just now'}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Topic Breakdown */}
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <h3 className="flex items-center gap-2 font-bold text-gray-900 dark:text-white mb-4">
+              Topics
+            </h3>
+            <div className="space-y-3">
+              {Object.entries(topicsBreakdown).sort(([, a], [, b]) => b - a).map(([topic, count]) => (
+                <div key={topic} className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-xs">{topic}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{count} posts</span>
+                </div>
+              ))}
+              {Object.keys(topicsBreakdown).length === 0 && <span className="text-gray-500 text-sm">No topics found</span>}
+            </div>
+          </div>
+        </div>
+      </div>
