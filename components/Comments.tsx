@@ -11,6 +11,8 @@ import {
   deleteDoc,
   doc,
   serverTimestamp,
+  increment,
+  updateDoc,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { FiTrash2, FiSend } from "react-icons/fi";
@@ -75,6 +77,13 @@ export default function Comments({ postId }: CommentsProps) {
         content: newComment.trim(),
         createdAt: serverTimestamp(),
       });
+
+      // Update comment count on post
+      const postRef = doc(db, "posts", postId);
+      await updateDoc(postRef, {
+        commentsCount: increment(1)
+      });
+
       setNewComment("");
     } catch (error) {
       console.error("Error adding comment:", error);
@@ -90,6 +99,12 @@ export default function Comments({ postId }: CommentsProps) {
 
     try {
       await deleteDoc(doc(db, "posts", postId, "comments", commentId));
+
+      // Update comment count on post
+      const postRef = doc(db, "posts", postId);
+      await updateDoc(postRef, {
+        commentsCount: increment(-1)
+      });
     } catch (error) {
       console.error("Error deleting comment:", error);
       alert("Không thể xóa bình luận. Vui lòng thử lại.");
