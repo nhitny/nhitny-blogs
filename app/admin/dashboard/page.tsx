@@ -259,50 +259,52 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        {/* Top Content */}
-        <div className="lg:col-span-2 space-y-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <FiTrendingUp className="text-yellow-500" /> Top Content
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {stats.topLiked && (
-              <div className="rounded-lg bg-gradient-to-br from-pink-50 to-white p-4 border border-pink-100 dark:from-pink-900/10 dark:to-gray-800 dark:border-pink-900/20">
-                <p className="text-xs font-semibold text-pink-600 uppercase mb-1">Most Liked</p>
-                <div className="font-bold text-gray-900 dark:text-white truncate" title={stats.topLiked.title}>
-                  {stats.topLiked.title}
-                </div>
-                <div className="mt-2 flex items-center gap-1 text-pink-500 font-medium">
-                  <FiHeart /> {stats.topLiked.likes}
-                </div>
+      {/* Top Content */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4">
+          <FiTrendingUp className="text-yellow-500" /> Top Content
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {stats.topLiked && (
+            <div className="rounded-lg bg-gradient-to-br from-pink-50 to-white p-4 border border-pink-100 dark:from-pink-900/10 dark:to-gray-800 dark:border-pink-900/20">
+              <p className="text-xs font-semibold text-pink-600 uppercase mb-1">Most Liked</p>
+              <div className="font-bold text-gray-900 dark:text-white truncate" title={stats.topLiked.title}>
+                {stats.topLiked.title}
               </div>
-            )}
-            {stats.topViewed && (
-              <div className="rounded-lg bg-gradient-to-br from-blue-50 to-white p-4 border border-blue-100 dark:from-blue-900/10 dark:to-gray-800 dark:border-blue-900/20">
-                <p className="text-xs font-semibold text-blue-600 uppercase mb-1">Most Viewed</p>
-                <div className="font-bold text-gray-900 dark:text-white truncate" title={stats.topViewed.title}>
-                  {stats.topViewed.title}
-                </div>
-                <div className="mt-2 flex items-center gap-1 text-blue-500 font-medium">
-                  <FiEye /> {stats.topViewed.views}
-                </div>
+              <div className="mt-2 flex items-center gap-1 text-pink-500 font-medium">
+                <FiHeart /> {stats.topLiked.likes}
               </div>
-            )}
-            {stats.topDiscussed && (
-              <div className="rounded-lg bg-gradient-to-br from-emerald-50 to-white p-4 border border-emerald-100 dark:from-emerald-900/10 dark:to-gray-800 dark:border-emerald-900/20">
-                <p className="text-xs font-semibold text-emerald-600 uppercase mb-1">Most Discussed</p>
-                <div className="font-bold text-gray-900 dark:text-white truncate" title={stats.topDiscussed.title}>
-                  {stats.topDiscussed.title}
-                </div>
-                <div className="mt-2 flex items-center gap-1 text-emerald-500 font-medium">
-                  <FiMessageSquare /> {stats.topDiscussed.commentsCount}
-                </div>
+            </div>
+          )}
+          {stats.topViewed && (
+            <div className="rounded-lg bg-gradient-to-br from-blue-50 to-white p-4 border border-blue-100 dark:from-blue-900/10 dark:to-gray-800 dark:border-blue-900/20">
+              <p className="text-xs font-semibold text-blue-600 uppercase mb-1">Most Viewed</p>
+              <div className="font-bold text-gray-900 dark:text-white truncate" title={stats.topViewed.title}>
+                {stats.topViewed.title}
               </div>
-            )}
-            {!stats.topLiked && <div className="text-sm text-gray-500">Chưa có dữ liệu thống kê.</div>}
-          </div>
+              <div className="mt-2 flex items-center gap-1 text-blue-500 font-medium">
+                <FiEye /> {stats.topViewed.views}
+              </div>
+            </div>
+          )}
+          {stats.topDiscussed && (
+            <div className="rounded-lg bg-gradient-to-br from-emerald-50 to-white p-4 border border-emerald-100 dark:from-emerald-900/10 dark:to-gray-800 dark:border-emerald-900/20">
+              <p className="text-xs font-semibold text-emerald-600 uppercase mb-1">Most Discussed</p>
+              <div className="font-bold text-gray-900 dark:text-white truncate" title={stats.topDiscussed.title}>
+                {stats.topDiscussed.title}
+              </div>
+              <div className="mt-2 flex items-center gap-1 text-emerald-500 font-medium">
+                <FiMessageSquare /> {stats.topDiscussed.commentsCount}
+              </div>
+            </div>
+          )}
+          {!stats.topLiked && <div className="text-sm text-gray-500">Chưa có dữ liệu thống kê.</div>}
+        </div>
+      </div>
 
-          {/* Table List */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-8">
+        {/* Posts Table - Takes 3 columns */}
+        <div className="lg:col-span-3">
           <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800/50 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <h3 className="font-semibold text-gray-900 dark:text-gray-100">All Posts</h3>
@@ -320,6 +322,7 @@ export default function AdminDashboard() {
                       <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Post</th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Metrics</th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Scheduled</th>
                       <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Actions</th>
                     </tr>
                   </thead>
@@ -341,11 +344,18 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {p.isPublished ? (
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">Published</span>
+                            <span title="Bài viết đã được xuất bản công khai" className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300 cursor-help">Published</span>
                           ) : (p.scheduledAt && new Date(p.scheduledAt) > new Date()) ? (
-                            <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Scheduled</span>
+                            <span title="Bài viết sẽ tự động xuất bản vào thời gian đã hẹn" className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 cursor-help">Scheduled</span>
                           ) : (
-                            <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Draft</span>
+                            <span title="Bản nháp - chưa công khai" className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 cursor-help">Draft</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
+                          {p.scheduledAt && new Date(p.scheduledAt) > new Date() ? (
+                            <span>{new Date(p.scheduledAt).toLocaleString('vi-VN')}</span>
+                          ) : (
+                            <span className="text-gray-400">—</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-right text-sm">
@@ -363,46 +373,20 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Right Sidebar: Activity & Topics */}
-        <div className="space-y-8">
-          {/* Recent Activity */}
+        {/* Right Sidebar: Topics only */}
+        <div className="lg:col-span-1">
           <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <h3 className="flex items-center gap-2 font-bold text-gray-900 dark:text-white mb-4">
-              <FiActivity className="text-indigo-500" /> Recent Comments
-            </h3>
-            <div className="space-y-4">
-              {recentComments.length === 0 ? (
-                <div className="text-sm text-gray-500 py-4 text-center italic">No recent comments</div>
-              ) : (
-                recentComments.map(c => (
-                  <div key={c.id} className="flex gap-3 items-start pb-3 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
-                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-600 shrink-0">
-                      {c.userDisplayName ? c.userDisplayName[0].toUpperCase() : 'U'}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{c.userDisplayName || "Anonymous"}</p>
-                      <p className="text-xs text-gray-500 line-clamp-2 italic">&quot;{c.content}&quot;</p>
-                      <p className="text-[10px] text-gray-400 mt-1">{c.createdAt?.seconds ? new Date(c.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Just now'}</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Topic Breakdown */}
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <h3 className="flex items-center gap-2 font-bold text-gray-900 dark:text-white mb-4">
-              Topics
+              <FiLayers className="text-purple-500" /> Topics
             </h3>
             <div className="space-y-3">
               {Object.entries(topicsBreakdown).sort(([, a], [, b]) => b - a).map(([topic, count]) => (
                 <div key={topic} className="flex items-center justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-xs">{topic}</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{count} posts</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{count}</span>
                 </div>
               ))}
-              {Object.keys(topicsBreakdown).length === 0 && <span className="text-gray-500 text-sm">No topics found</span>}
+              {Object.keys(topicsBreakdown).length === 0 && <span className="text-gray-500 text-sm">No topics</span>}
             </div>
           </div>
         </div>
