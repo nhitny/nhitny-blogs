@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import ScrollToTop from "@/components/ScrollToTop";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +17,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <AuthProvider>
             <Navbar />
-            {children}
+            <div className="flex min-h-screen flex-col">
+              {children}
+              <Footer />
+            </div>
             <ScrollToTop />
           </AuthProvider>
         </ThemeProvider>
