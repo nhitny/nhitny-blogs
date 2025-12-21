@@ -9,6 +9,7 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
     }
 
@@ -18,12 +19,13 @@ service cloud.firestore {
       // (Client-side filtering will show only published/scheduled posts)
       allow read: if true;
 
-      // Only admin can write
+      // Only admin can write (create/delete)
       allow create, delete: if isAdmin();
       
-      // Allow update for admin OR for incrementing views/likes/commentsCount
-      allow update: if isAdmin() || 
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'commentsCount']));
+      // Allow update for incrementing views/likes/commentsCount OR if admin
+      // (Order changed to prevent isAdmin crash from blocking valid counter updates)
+      allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'commentsCount']))
+                    || isAdmin();
 
       // COMMENTS (Sub-collection)
       match /comments/{commentId} {
