@@ -16,7 +16,9 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
+import Mathematics from "@tiptap/extension-mathematics";
 import { useEffect } from "react";
+import "katex/dist/katex.min.css";
 import {
     FiBold,
     FiItalic,
@@ -34,6 +36,7 @@ import {
     AiOutlineOrderedList,
     AiOutlineStrikethrough,
     AiOutlineTable,
+    AiOutlineFunction,
 } from "react-icons/ai";
 import { BsTypeH1, BsTypeH2, BsTypeH3, BsQuote } from "react-icons/bs";
 import { MdFormatClear, MdHorizontalRule, MdCheckBox } from "react-icons/md";
@@ -110,6 +113,7 @@ export default function TiptapEditor({
             Placeholder.configure({
                 placeholder,
             }),
+            Mathematics,
         ],
         content: value,
         editorProps: {
@@ -168,6 +172,15 @@ export default function TiptapEditor({
         </figure>
       `;
             editor.chain().focus().setImage({ src: url }).run();
+        }
+    };
+
+    const addMath = () => {
+        const latex = window.prompt("Nhập công thức LaTeX (ví dụ: E = mc^2):");
+        if (latex) {
+            // Insert inline math
+            const mathHtml = `<span class="math-inline">$${latex}$</span>`;
+            editor.chain().focus().insertContent(mathHtml).run();
         }
     };
 
@@ -395,6 +408,9 @@ export default function TiptapEditor({
                         title="Khối mã code"
                     >
                         <FiCode className="h-6 w-6" />
+                    </ToolbarButton>
+                    <ToolbarButton onClick={addMath} title="Chèn công thức toán (LaTeX)">
+                        <AiOutlineFunction className="h-5 w-5" />
                     </ToolbarButton>
                 </div>
 
