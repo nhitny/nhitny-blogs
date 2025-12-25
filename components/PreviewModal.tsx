@@ -96,7 +96,7 @@ export default function PreviewModal({ isOpen, onClose, post }: PreviewModalProp
 
                         {/* Description */}
                         {post.description && (
-                            <p className="text-lg text-gray-700 dark:text-gray-300 mb-6 italic border-l-4 border-indigo-600 pl-4">
+                            <p className="text-lg text-gray-800 dark:text-gray-200 mb-6 italic border-l-4 border-indigo-600 pl-4 font-medium">
                                 {post.description}
                             </p>
                         )}
