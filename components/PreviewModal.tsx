@@ -68,6 +68,7 @@ export default function PreviewModal({ isOpen, onClose, post }: PreviewModalProp
                         {/* Header Image */}
                         {post.headerImage && (
                             <div className="mb-8 -mx-8 -mt-8">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={post.headerImage}
                                     alt={post.title}
@@ -133,7 +134,7 @@ export default function PreviewModal({ isOpen, onClose, post }: PreviewModalProp
                 {/* Footer */}
                 <div className="sticky bottom-0 flex items-center justify-between px-6 py-4 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                        💡 Đây chỉ là bản xem trước. Nhấn "Đóng" để quay lại chỉnh sửa.
+                        💡 Đây chỉ là bản xem trước. Nhấn &quot;Đóng&quot; để quay lại chỉnh sửa.
                     </p>
                     <button
                         onClick={onClose}
