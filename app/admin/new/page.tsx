@@ -12,7 +12,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
-const RichText = dynamic(() => import("@/components/RichText"), {
+const TiptapEditor = dynamic(() => import("@/components/TiptapEditor"), {
   ssr: false,
   loading: () => <div className="text-sm text-gray-400">Đang tải editor…</div>,
 });
@@ -351,11 +351,10 @@ export default function NewPostPage() {
               />
             </div>
 
-            <RichText
+            <TiptapEditor
               value={form.content}
-              onChange={(html) => setForm(s => ({ ...s, content: html }))}
-              placeholder="Viết nội dung (Heading 2/3 giúp TOC hiển thị đẹp)…"
-              onReady={(q) => setEditorQuill(q)}
+              onChange={(html: string) => setForm(s => ({ ...s, content: html }))}
+              placeholder="Nhấn '/' để xem lệnh, hoặc bắt đầu viết... (Heading 2/3 giúp TOC hiển thị đẹp)"
             />
 
             <div className="grid gap-3 sm:grid-cols-3">
