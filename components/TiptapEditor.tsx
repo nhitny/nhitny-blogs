@@ -63,13 +63,16 @@ export default function TiptapEditor({
             }),
             Link.configure({
                 openOnClick: false,
+                autolink: true, // Auto-detect URLs
                 HTMLAttributes: {
                     class: "text-indigo-600 underline hover:text-indigo-800 dark:text-indigo-400",
                 },
             }),
             Image.configure({
+                inline: false,
+                allowBase64: true,
                 HTMLAttributes: {
-                    class: "max-w-full h-auto rounded-lg my-4",
+                    class: "max-w-full h-auto rounded-lg my-4 mx-auto block",
                 },
             }),
             Table.configure({
@@ -114,6 +117,16 @@ export default function TiptapEditor({
                 class:
                     "prose prose-sm sm:prose lg:prose-lg xl:prose-xl dark:prose-invert max-w-none focus:outline-none min-h-[500px] p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-b-lg border border-t-0 border-gray-300 dark:border-gray-700",
             },
+            // Handle paste to auto-convert image URLs
+            handlePaste: (view, event) => {
+                const text = event.clipboardData?.getData("text/plain");
+                if (text && isImageUrl(text)) {
+                    event.preventDefault();
+                    editor?.chain().focus().setImage({ src: text }).run();
+                    return true;
+                }
+                return false;
+            },
         },
         onUpdate: ({ editor }) => {
             onChange(editor.getHTML());
@@ -130,6 +143,11 @@ export default function TiptapEditor({
         return <div className="text-gray-400 p-4">Đang tải editor...</div>;
     }
 
+    // Check if URL is an image
+    const isImageUrl = (url: string): boolean => {
+        return /\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)(\?.*)?$/i.test(url);
+    };
+
     const addLink = () => {
         const url = window.prompt("Nhập URL:");
         if (url) {
@@ -138,8 +156,17 @@ export default function TiptapEditor({
     };
 
     const addImage = () => {
-        const url = window.prompt("Nhập URL ảnh:");
+        const url = window.prompt("Nhập URL ảnh (hoặc paste trực tiếp vào editor):");
         if (url) {
+            // Insert image with figure wrapper for auto-numbering
+            const figureHtml = `
+        <figure class="image-figure">
+          <img src="${url}" alt="Image" />
+          <figcaption contenteditable="true" class="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
+            Nhấn để thêm mô tả ảnh...
+          </figcaption>
+        </figure>
+      `;
             editor.chain().focus().setImage({ src: url }).run();
         }
     };
@@ -329,7 +356,7 @@ export default function TiptapEditor({
                     <ToolbarButton onClick={addLink} title="Chèn link">
                         <FiLink className="h-5 w-5" />
                     </ToolbarButton>
-                    <ToolbarButton onClick={addImage} title="Chèn ảnh">
+                    <ToolbarButton onClick={addImage} title="Chèn ảnh (hoặc paste URL trực tiếp)">
                         <FiImage className="h-5 w-5" />
                     </ToolbarButton>
                     <ToolbarButton
@@ -385,10 +412,30 @@ export default function TiptapEditor({
                 <span className="font-semibold text-indigo-600 dark:text-indigo-400">💡 Tips:</span>
                 <span>
                     <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">Ctrl+B</kbd> Đậm,
-                    <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs ml-2">Ctrl+I</kbd> Nghiêng,
-                    <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs ml-2">Ctrl+Z</kbd> Hoàn tác
+                    <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs ml-2">Ctrl+I</kbd> Nghiêng.
+                    Paste URL ảnh trực tiếp vào editor để chèn ảnh nhanh! 🖼️
                 </span>
             </div>
+
+            {/* CSS for auto-numbering images */}
+            <style jsx global>{`
+        .ProseMirror {
+          counter-reset: figure-counter;
+        }
+        
+        .ProseMirror img {
+          counter-increment: figure-counter;
+        }
+        
+        .ProseMirror img::after {
+          content: "Hình " counter(figure-counter);
+          display: block;
+          text-align: center;
+          font-size: 0.875rem;
+          color: #6b7280;
+          margin-top: 0.5rem;
+        }
+      `}</style>
         </div>
     );
 }

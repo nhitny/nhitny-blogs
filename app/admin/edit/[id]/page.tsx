@@ -12,7 +12,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
-const NotionEditor = dynamic(() => import("@/components/NotionEditor"), {
+const TiptapEditor = dynamic(() => import("@/components/TiptapEditor"), {
       ssr: false,
       loading: () => <div className="text-sm text-gray-400">Đang tải editor…</div>,
 });
@@ -371,7 +371,7 @@ export default function EditPostPage() {
                                           />
                                     </div>
 
-                                    <NotionEditor
+                                    <TiptapEditor
                                           value={form.content}
                                           onChange={(html: string) => setForm(s => ({ ...s, content: html }))}
                                           placeholder="Nhấn '/' để xem lệnh, hoặc bắt đầu viết... (Heading 2/3 giúp TOC hiển thị đẹp)"
