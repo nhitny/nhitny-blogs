@@ -340,6 +340,13 @@ export default function BlogSlugPage({
             {post.title}
           </h1>
 
+          {/* Description */}
+          {post.description && (
+            <p className="mb-6 text-lg text-gray-900 dark:text-gray-100 italic border-l-4 border-indigo-600 pl-4 font-semibold">
+              {post.description}
+            </p>
+          )}
+
           {/* Author info và dates */}
           <div className="mb-6 flex flex-wrap items-center gap-4 text-sm">
             {post.student && (
