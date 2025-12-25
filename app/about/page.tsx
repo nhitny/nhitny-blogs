@@ -6,10 +6,10 @@ export default function AboutPage() {
   const skills = [
     { name: "Python", category: "Language", icon: <FiCode /> },
     { name: "PyTorch", category: "AI/ML", icon: <FiCpu /> },
-    { name: "TensorFlow", category: "AI/ML", icon: <FiCpu /> },
+    { name: "Transformers", category: "NLP", icon: <FiCpu /> },
+    { name: "LLMs / RAG", category: "AI Research", icon: <FiDatabase /> },
     { name: "React / Next.js", category: "Web", icon: <FiCode /> },
-    { name: "Tailwind CSS", category: "Web", icon: <FiCode /> },
-    { name: "PostgreSQL", category: "Database", icon: <FiDatabase /> },
+    { name: "Arduino / IoT", category: "Hardware", icon: <FiCpu /> },
   ];
 
   return (
@@ -26,7 +26,7 @@ export default function AboutPage() {
               Xin chào, mình là <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">NhiTny</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
-              AI Engineer | Web Developer | Tech Enthusiast
+              AI Engineer | NLP & RAG Specialist | Tech Enthusiast
             </p>
           </div>
         </div>
@@ -47,14 +47,14 @@ export default function AboutPage() {
               Về bản thân
             </h2>
             <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-400">
-              Chào bạn! Mình là một kỹ sư đam mê trí tuệ nhân tạo và lập trình web. Blog này là nơi mình ghi lại hành trình học tập, nghiên cứu và phát triển các sản phẩm công nghệ.
+              Chào bạn! Mình là một kỹ sư đam mê trí tuệ nhân tạo, đặc biệt là NLP và các mô hình ngôn ngữ lớn (LLMs). Blog này là nơi mình ghi lại hành trình học tập, nghiên cứu và những kiến thức thú vị mình tìm hiểu được.
             </p>
             <p className="mt-4 text-lg leading-8 text-gray-600 dark:text-gray-400">
-              Mình tin rằng cách tốt nhất để học là chia sẻ. Tại đây, bạn sẽ tìm thấy những bài viết về Deep Learning, Machine Learning, cũng như các kỹ thuật xây dựng ứng dụng web hiện đại.
+              Mình tin rằng kiến thức là một hành trình dài. Tại đây, mình chia sẻ những gì mình đúc kết được về Deep Learning, RAG, LLM và công nghệ, với hy vọng có thể cùng giao lưu và học hỏi thêm từ cộng đồng.
             </p>
             <div className="mt-8 flex gap-4">
               <a
-                href="#"
+                href="https://github.com/nhitny"
                 className="flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
               >
                 <FiGithub className="h-5 w-5" /> GitHub

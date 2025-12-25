@@ -18,13 +18,13 @@ export default function Hero() {
                     </div>
 
                     <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-6xl bg-clip-text text-transparent bg-gradient-to-b from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 drop-shadow-sm">
-                        Chia sẻ hành trình <br />
+                        Ghi lại hành trình <br />
                         <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                            Deep Learning & Tech
+                            AI, NLP & Tech
                         </span>
                     </h1>
                     <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
-                        Nơi mình ghi lại những kiến thức, trải nghiệm về AI, Data Science và những điều thú vị trong thế giới công nghệ.
+                        Blog này là nơi mình lưu lại những kiến thức và trải nghiệm tìm hiểu được trong quá trình học tập. Mọi thứ là góc nhìn cá nhân và hành trình tự học, hy vọng sẽ giúp ích được cho bạn.
                     </p>
                     <div className="mt-10 flex items-center justify-center gap-x-6">
                         <Link
