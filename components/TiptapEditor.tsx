@@ -204,9 +204,9 @@ export default function TiptapEditor({
     );
 
     return (
-        <div className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden shadow-lg">
-            {/* Sticky Toolbar */}
-            <div className="sticky top-0 z-50 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-300 dark:border-gray-700 p-3 flex flex-wrap gap-1.5 shadow-md">
+        <div className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-visible shadow-lg">
+            {/* Sticky Toolbar - Always visible */}
+            <div className="sticky top-0 z-[999] bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-300 dark:border-gray-700 p-3 flex flex-wrap gap-1.5 shadow-lg backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
                 {/* Undo/Redo */}
                 <div className="flex gap-1">
                     <ToolbarButton
