@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/firebase/firebaseConfig";
 import Link from "next/link";
 import { FiSearch } from "react-icons/fi";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface Post {
     id: string;
@@ -20,7 +20,9 @@ import TechBackground from "@/components/TechBackground";
 
 function SearchContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const initialQuery = searchParams?.get("q") || "";
+    const searchBoxRef = useRef<HTMLDivElement>(null);
 
     const [searchQuery, setSearchQuery] = useState(initialQuery);
     const [results, setResults] = useState<Post[]>([]);
@@ -62,6 +64,20 @@ function SearchContent() {
             setResults([]);
         }
     }, [allPosts, initialQuery]);
+
+    // Click outside handler - navigate back to /blogs
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (searchBoxRef.current && !searchBoxRef.current.contains(event.target as Node)) {
+                router.push('/blogs');
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [router]);
 
     const handleSearch = () => {
         if (!searchQuery.trim()) {
@@ -108,7 +124,7 @@ function SearchContent() {
                 </div>
 
                 {/* Search Input Box */}
-                <div className="relative mx-auto max-w-2xl transform transition-all focus-within:scale-105">
+                <div ref={searchBoxRef} className="relative mx-auto max-w-2xl transform transition-all focus-within:scale-105">
                     <div className="absolute inset-0 -z-10 bg-gradient-to-r from-indigo-500 to-purple-600 blur opacity-20 rounded-2xl"></div>
                     <div className="relative flex items-center rounded-2xl border border-gray-200 bg-white/80 p-2 shadow-xl backdrop-blur-xl dark:border-gray-700 dark:bg-gray-800/80">
                         <FiSearch className="ml-4 h-6 w-6 text-gray-400" />
