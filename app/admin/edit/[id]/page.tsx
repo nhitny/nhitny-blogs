@@ -17,6 +17,10 @@ const TiptapEditor = dynamic(() => import("@/components/TiptapEditor"), {
       loading: () => <div className="text-sm text-gray-400">Đang tải editor…</div>,
 });
 
+const PreviewModal = dynamic(() => import("@/components/PreviewModal"), {
+      ssr: false,
+});
+
 type PostForm = {
       title: string;
       slug: string;
@@ -46,6 +50,7 @@ export default function EditPostPage() {
       const [editorQuill, setEditorQuill] = useState<any>(null);
       const [saving, setSaving] = useState(false);
       const [lastSaved, setLastSaved] = useState<Date | null>(null);
+      const [showPreview, setShowPreview] = useState(false);
 
       const [form, setForm] = useState<PostForm>({
             title: "",
@@ -403,6 +408,13 @@ export default function EditPostPage() {
 
                                     <div className="flex gap-3">
                                           <button
+                                                type="button"
+                                                onClick={() => setShowPreview(true)}
+                                                className="rounded bg-purple-600 px-4 py-2 font-semibold text-white hover:bg-purple-700 transition-colors"
+                                          >
+                                                👁️ Xem trước
+                                          </button>
+                                          <button
                                                 type="submit"
                                                 className="rounded bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700"
                                           >
@@ -416,6 +428,13 @@ export default function EditPostPage() {
                                           </Link>
                                     </div>
                               </form>
+
+                              {/* Preview Modal */}
+                              <PreviewModal
+                                    isOpen={showPreview}
+                                    onClose={() => setShowPreview(false)}
+                                    post={form}
+                              />
                         </>
                   )}
             </div>

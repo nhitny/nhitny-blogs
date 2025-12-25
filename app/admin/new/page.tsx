@@ -17,6 +17,10 @@ const TiptapEditor = dynamic(() => import("@/components/TiptapEditor"), {
   loading: () => <div className="text-sm text-gray-400">Đang tải editor…</div>,
 });
 
+const PreviewModal = dynamic(() => import("@/components/PreviewModal"), {
+  ssr: false,
+});
+
 type PostForm = {
   title: string;
   slug: string;
@@ -43,6 +47,7 @@ export default function NewPostPage() {
   const [postId, setPostId] = useState<string | null>(null); // Track draft ID
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   const [form, setForm] = useState<PostForm>({
     title: "",
@@ -381,8 +386,26 @@ export default function NewPostPage() {
               </div>
             </div>
 
-            <button className="rounded bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700">Tạo bài</button>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowPreview(true)}
+                className="rounded bg-purple-600 px-4 py-2 font-semibold text-white hover:bg-purple-700 transition-colors"
+              >
+                👁️ Xem trước
+              </button>
+              <button className="rounded bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700 transition-colors">
+                Tạo bài
+              </button>
+            </div>
           </form>
+
+          {/* Preview Modal */}
+          <PreviewModal
+            isOpen={showPreview}
+            onClose={() => setShowPreview(false)}
+            post={form}
+          />
         </>
       )}
     </div>
