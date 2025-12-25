@@ -17,8 +17,8 @@ import {
 import { useEffect, useState } from "react";
 import { FiTrash2, FiSend } from "react-icons/fi";
 import Link from "next/link";
-import UserAvatar from @/components/Layout/UserAvatar;
-import FunTechLoader from @/components/UI/FunTechLoader;
+import UserAvatar from "@/components/Layout/UserAvatar";
+import FunTechLoader from "@/components/UI/FunTechLoader";
 
 interface Comment {
   id: string;

@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
 import { FiSearch, FiMenu, FiX, FiUser, FiLogOut, FiSun, FiMoon, FiHome, FiBookOpen, FiInfo, FiTrendingUp } from "react-icons/fi";
-import UserAvatar from @/components/Layout/UserAvatar;
+import UserAvatar from "@/components/Layout/UserAvatar";
 
 export default function Navbar() {
   const pathname = usePathname();
