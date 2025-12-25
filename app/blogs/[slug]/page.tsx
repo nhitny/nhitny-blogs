@@ -416,7 +416,12 @@ export default function BlogSlugPage({
 
           {/* Nội dung bài viết */}
           <article
-            className="prose max-w-none text-gray-800 dark:prose-invert dark:text-gray-300 lg:prose-lg"
+            className="prose max-w-none lg:prose-lg dark:prose-invert
+              text-black dark:text-white
+              prose-p:text-black dark:prose-p:text-white
+              prose-headings:text-black dark:prose-headings:text-white
+              prose-strong:text-black dark:prose-strong:text-white
+              prose-li:text-black dark:prose-li:text-white"
             dangerouslySetInnerHTML={{ __html: contentHtml || post.content }}
           />
 
