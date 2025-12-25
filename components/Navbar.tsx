@@ -39,7 +39,6 @@ export default function Navbar() {
     { href: "/", label: "Trang chủ", icon: <FiHome className="h-5 w-5" /> },
     { href: "/blogs", label: "Bài viết", icon: <FiBookOpen className="h-5 w-5" /> },
     { href: "/about", label: "Giới thiệu", icon: <FiInfo className="h-5 w-5" /> },
-    { href: "/blogs", label: "Xu Hướng", icon: <FiTrendingUp className="h-5 w-5" /> }, // Tạm thời link tới blogs
   ];
 
   const isActive = (path: string) => pathname === path;
@@ -62,11 +61,11 @@ export default function Navbar() {
                 key={index}
                 href={link.href}
                 className={`group flex items-center space-x-2 rounded-lg px-3 py-2 text-base font-semibold transition-colors ${isActive(link.href)
-                  ? "text-green-800 dark:text-green-400"
-                  : "text-green-900/80 hover:text-green-700 dark:text-green-100/80 dark:hover:text-green-300"
+                  ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
+                  : "text-gray-700 hover:bg-indigo-50 dark:text-gray-300 dark:hover:bg-indigo-900/30"
                   }`}
               >
-                <span className={isActive(link.href) ? "text-green-800 dark:text-green-400" : "text-green-800 dark:text-green-500"}>
+                <span className={isActive(link.href) ? "text-indigo-700 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}>
                   {link.icon}
                 </span>
                 <span>{link.label}</span>
@@ -180,17 +179,20 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="border-t border-gray-200 py-3 dark:border-gray-800 md:hidden">
-            {navLinks.map((link) => (
+            {navLinks.map((link, index) => (
               <Link
-                key={link.href}
+                key={index}
                 href={link.href}
-                className={`block rounded-lg px-3 py-2 text-base font-medium ${isActive(link.href)
+                className={`flex items-center space-x-2 rounded-lg px-3 py-2 text-base font-semibold ${isActive(link.href)
                   ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
-                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                  : "text-gray-700 hover:bg-indigo-50 dark:text-gray-300 dark:hover:bg-indigo-900/30"
                   }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {link.label}
+                <span className={isActive(link.href) ? "text-indigo-700 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}>
+                  {link.icon}
+                </span>
+                <span>{link.label}</span>
               </Link>
             ))}
           </div>
