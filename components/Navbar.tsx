@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
-import { FiSearch, FiMenu, FiX, FiUser, FiLogOut, FiSun, FiMoon } from "react-icons/fi";
+import { FiSearch, FiMenu, FiX, FiUser, FiLogOut, FiSun, FiMoon, FiHome, FiBookOpen, FiInfo, FiTrendingUp } from "react-icons/fi";
 import UserAvatar from "./UserAvatar";
 
 export default function Navbar() {
@@ -36,9 +36,10 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { href: "/", label: "Trang chủ" },
-    { href: "/blogs", label: "Bài viết" },
-    { href: "/about", label: "Giới thiệu" },
+    { href: "/", label: "Trang chủ", icon: <FiHome className="h-5 w-5" /> },
+    { href: "/blogs", label: "Bài viết", icon: <FiBookOpen className="h-5 w-5" /> },
+    { href: "/about", label: "Giới thiệu", icon: <FiInfo className="h-5 w-5" /> },
+    { href: "/blogs", label: "Xu Hướng", icon: <FiTrendingUp className="h-5 w-5" /> }, // Tạm thời link tới blogs
   ];
 
   const isActive = (path: string) => pathname === path;
@@ -55,17 +56,20 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex md:items-center md:space-x-1">
-            {navLinks.map((link) => (
+          <div className="hidden md:flex md:items-center md:space-x-4">
+            {navLinks.map((link, index) => (
               <Link
-                key={link.href}
+                key={index}
                 href={link.href}
-                className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive(link.href)
-                  ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
-                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                className={`group flex items-center space-x-2 rounded-lg px-3 py-2 text-base font-semibold transition-colors ${isActive(link.href)
+                  ? "text-green-800 dark:text-green-400"
+                  : "text-green-900/80 hover:text-green-700 dark:text-green-100/80 dark:hover:text-green-300"
                   }`}
               >
-                {link.label}
+                <span className={isActive(link.href) ? "text-green-800 dark:text-green-400" : "text-green-800 dark:text-green-500"}>
+                  {link.icon}
+                </span>
+                <span>{link.label}</span>
               </Link>
             ))}
           </div>

@@ -19,7 +19,7 @@ export default async function BlogsPage() {
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-center text-lg text-gray-600 dark:text-gray-400">
-            Tổng hợp các bài viết, hướng dẫn và chia sẻ kinh nghiệm về Deep Learning, Web Development và Công nghệ.
+            Tổng hợp các bài viết và ghi chú về Deep Learning, NLP, LLMs và Công nghệ trong quá trình nghiên cứu.
           </p>
         </div>
       </section>
