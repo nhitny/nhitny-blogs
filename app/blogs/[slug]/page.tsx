@@ -26,11 +26,15 @@ function addHeadingIds(html: string): { html: string; headings: HeadingItem[] } 
   const container = document.createElement("div");
   container.innerHTML = html;
 
-  const hs = Array.from(container.querySelectorAll("h2, h3"));
+  const hs = Array.from(container.querySelectorAll("h1, h2, h3"));
   const headings: HeadingItem[] = [];
 
   hs.forEach((el) => {
-    const level = el.tagName.toLowerCase() === "h2" ? 2 : 3;
+    const tag = el.tagName.toLowerCase();
+    let level = 2;
+    if (tag === "h1") level = 1;
+    else if (tag === "h3") level = 3;
+
     const text = (el.textContent || "").trim();
     const id = slugify(text);
     el.setAttribute("id", id);
