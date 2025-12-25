@@ -16,7 +16,7 @@ import {
   collectionGroup,
   limit,
 } from "firebase/firestore";
-import ConfirmModal from "@/components/ConfirmModal";
+import ConfirmModal from "@/components/UI/ConfirmModal";
 import { FiHeart, FiEye, FiMessageSquare, FiTrendingUp, FiLayers, FiActivity, FiCalendar } from "react-icons/fi";
 
 type Post = {

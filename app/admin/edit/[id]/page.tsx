@@ -12,12 +12,12 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
-const TiptapEditor = dynamic(() => import("@/components/TiptapEditor"), {
+const TiptapEditor = dynamic(() => import("@/components/Blog/TiptapEditor"), {
       ssr: false,
       loading: () => <div className="text-sm text-gray-400">Đang tải editor…</div>,
 });
 
-const PreviewModal = dynamic(() => import("@/components/PreviewModal"), {
+const PreviewModal = dynamic(() => import("@/components/UI/PreviewModal"), {
       ssr: false,
 });
 
@@ -47,7 +47,7 @@ export default function EditPostPage() {
 
       const [checkingAuth, setCheckingAuth] = useState(true);
       const [loading, setLoading] = useState(true);
-      const [editorQuill, setEditorQuill] = useState<any>(null);
+
       const [saving, setSaving] = useState(false);
       const [lastSaved, setLastSaved] = useState<Date | null>(null);
       const [showPreview, setShowPreview] = useState(false);
@@ -65,7 +65,7 @@ export default function EditPostPage() {
       });
 
       const headerInputRef = useRef<HTMLInputElement | null>(null);
-      const inlineImageInputRef = useRef<HTMLInputElement | null>(null);
+
 
       // Guard admin
       useEffect(() => {
@@ -180,14 +180,7 @@ export default function EditPostPage() {
             return await getDownloadURL(r);
       };
 
-      // Chèn ảnh vào editor
-      const insertImage = async (file?: File) => {
-            if (!file || !editorQuill) return;
-            const url = await uploadImage(file);
-            const range = editorQuill.getSelection(true);
-            editorQuill.insertEmbed(range ? range.index : 0, "image", url, "user");
-            editorQuill.setSelection((range ? range.index : 0) + 1);
-      };
+
 
       const handleSubmit = async (e: React.FormEvent) => {
             e.preventDefault();
@@ -361,22 +354,7 @@ export default function EditPostPage() {
                                           onChange={(e) => setForm(s => ({ ...s, author: e.target.value }))}
                                     />
 
-                                    <div className="flex items-center gap-2">
-                                          <button
-                                                type="button"
-                                                className="rounded bg-gray-200 px-3 py-1 text-sm text-gray-700 hover:bg-gray-300 dark:bg-slate-700 dark:text-gray-100 dark:hover:bg-slate-600"
-                                                onClick={() => inlineImageInputRef.current?.click()}
-                                          >
-                                                Chèn ảnh vào nội dung…
-                                          </button>
-                                          <input
-                                                ref={inlineImageInputRef}
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={(e) => insertImage(e.target.files?.[0])}
-                                          />
-                                    </div>
+
 
                                     <TiptapEditor
                                           value={form.content}

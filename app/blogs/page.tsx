@@ -1,5 +1,5 @@
-import BlogHeader from "@/components/BlogHeader";
-import BlogsList from "@/components/BlogsList";
+import BlogHeader from "@/components/Blog/BlogHeader";
+import BlogsList from "@/components/Blog/BlogsList";
 import { getAllBlogPosts, getAllTopics } from "@/Lib/Data";
 
 export const dynamic = "force-dynamic";

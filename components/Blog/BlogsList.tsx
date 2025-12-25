@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import BlogHeader from "@/components/BlogHeader";
+import BlogHeader from "@/components/Blog/BlogHeader";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 interface BlogsListProps {

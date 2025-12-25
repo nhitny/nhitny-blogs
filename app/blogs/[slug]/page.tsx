@@ -4,9 +4,9 @@ import { use } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/firebase/firebaseConfig";
-import LikeBtn from "@/components/LikeBtn";
-import Comments from "@/components/Comments";
-import Toc, { HeadingItem } from "@/components/Toc";
+import LikeBtn from "@/components/Blog/LikeBtn";
+import Comments from "@/components/Blog/Comments";
+import Toc, { HeadingItem } from "@/components/Blog/Toc";
 
 // Tạo slug từ text (dùng cho id heading)
 function slugify(text: string) {

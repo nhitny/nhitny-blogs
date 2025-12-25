@@ -4,11 +4,11 @@ import { Be_Vietnam_Pro } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
-import ScrollToTop from "@/components/ScrollToTop";
+import ScrollToTop from "@/components/UI/ScrollToTop";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import ThemeSync from "@/components/ThemeSync";
+import Navbar from "@/components/Layout/Navbar";
+import Footer from "@/components/Layout/Footer";
+import ThemeSync from "@/components/UI/ThemeSync";
 
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],

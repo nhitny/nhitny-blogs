@@ -1,4 +1,4 @@
-import FunTechLoader from "@/components/FunTechLoader";
+import FunTechLoader from "@/components/UI/FunTechLoader";
 
 export default function Loading() {
     return (

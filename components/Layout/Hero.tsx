@@ -1,7 +1,7 @@
 "use client";
 
 // @ts-ignore
-import TechBackground from "@/components/TechBackground";
+import TechBackground from "@/components/Layout/TechBackground";
 import Link from "next/link";
 import { FiArrowRight, FiGithub, FiLinkedin, FiMail } from "react-icons/fi";
 

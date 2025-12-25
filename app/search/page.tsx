@@ -16,7 +16,7 @@ interface Post {
     headerImage?: string;
 }
 
-import TechBackground from "@/components/TechBackground";
+import TechBackground from "@/components/Layout/TechBackground";
 
 function SearchContent() {
     const searchParams = useSearchParams();

@@ -1,10 +1,10 @@
 import { getAllBlogPosts, getAllTopics } from "@/Lib/Data";
-import BlogHeader from "@/components/BlogHeader";
-import Hero from "@/components/Hero";
+import BlogHeader from "@/components/Blog/BlogHeader";
+import Hero from "@/components/Layout/Hero";
 import Link from "next/link";
 import { FiArrowRight, FiTag, FiClock } from "react-icons/fi";
 import { FaFire } from "react-icons/fa";
-import TopicMarquee from "@/components/TopicMarquee";
+import TopicMarquee from "@/components/Layout/TopicMarquee";
 
 export const dynamic = "force-dynamic";
 

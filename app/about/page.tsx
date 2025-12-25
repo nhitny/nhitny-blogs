@@ -1,4 +1,4 @@
-import TechBackground from "@/components/TechBackground";
+import TechBackground from "@/components/Layout/TechBackground";
 import { FiGithub, FiLinkedin, FiMail, FiCode, FiCpu, FiDatabase, FiAward } from "react-icons/fi";
 import Image from "next/image";
 
