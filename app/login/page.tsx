@@ -49,7 +49,7 @@ export default function LoginPage() {
                     {/* Logo/Title */}
                     <div className="text-center">
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                            NhiTny Blog
+                            Nhitny Blog
                         </h1>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">
                             Đăng nhập để tiếp tục

@@ -23,7 +23,7 @@ export default function AboutPage() {
         <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-6xl">
-              Xin chào, mình là <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">NhiTny</span>
+              Xin chào, mình là <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">Nhitny</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
               AI Engineer | NLP & RAG Specialist | Tech Enthusiast
