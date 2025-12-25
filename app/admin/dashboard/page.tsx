@@ -31,6 +31,7 @@ type Post = {
   likes?: number;
   commentsCount?: number;
   tags?: string[];
+  updatedAt?: any; // Firestore Timestamp | ISO | string
 };
 
 type Comment = {
@@ -100,9 +101,11 @@ export default function AdminDashboard() {
   }, [router]);
 
   // 🔄 Lấy danh sách bài viết
+  // 🔄 Lấy danh sách bài viết
   const fetchPosts = async () => {
     setLoading(true);
-    const q = query(collection(db, "posts"), orderBy("date", "desc"));
+    // Lấy tất cả, sort client-side để support fallback create/update
+    const q = query(collection(db, "posts"));
     const snap = await getDocs(q);
     const data = snap.docs.map((d) => {
       const v = d.data() as any;
@@ -112,8 +115,26 @@ export default function AdminDashboard() {
       const scheduledStr = v?.scheduledAt?.toDate
         ? v.scheduledAt.toDate().toISOString()
         : v?.scheduledAt ?? null;
-      return { id: d.id, ...v, date: dateStr, scheduledAt: scheduledStr } as Post;
+      const updatedAtStr = v?.updatedAt?.toDate
+        ? v.updatedAt.toDate().toISOString()
+        : v?.updatedAt ?? null;
+
+      return {
+        id: d.id,
+        ...v,
+        date: dateStr,
+        scheduledAt: scheduledStr,
+        updatedAt: updatedAtStr,
+      } as Post;
     });
+
+    // Sort: Ưu tiên updatedAt, nếu không có thì dùng date (created). Mới nhất lên đầu.
+    data.sort((a, b) => {
+      const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : (a.date ? new Date(a.date).getTime() : 0);
+      const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : (b.date ? new Date(b.date).getTime() : 0);
+      return timeB - timeA;
+    });
+
     setPosts(data);
     calculateStats(data);
     setLoading(false);
@@ -345,8 +366,15 @@ export default function AdminDashboard() {
                           <Link href={`/blogs/${p.slug}`} className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 truncate max-w-[200px] block" title={p.title}>
                             {p.title || "(No title)"}
                           </Link>
-                          <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                            <span className="flex items-center gap-1"><FiCalendar className="w-3 h-3" /> {p.date ? new Date(p.date).toLocaleDateString('vi-VN') : 'N/A'}</span>
+                          <div className="flex flex-col gap-0.5 text-xs text-gray-500 mt-1">
+                            <span className="flex items-center gap-1" title="Ngày tạo">
+                              <FiCalendar className="w-3 h-3" /> {p.date ? new Date(p.date).toLocaleDateString('vi-VN') : 'N/A'}
+                            </span>
+                            {p.updatedAt && (
+                              <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-medium" title="Cập nhật lần cuối">
+                                <FiActivity className="w-3 h-3" /> {new Date(p.updatedAt).toLocaleDateString('vi-VN')} {new Date(p.updatedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td className="px-6 py-4">

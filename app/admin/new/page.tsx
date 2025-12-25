@@ -135,6 +135,10 @@ export default function NewPostPage() {
           payload.scheduledAt = Timestamp.fromDate(new Date(form.scheduledAt));
         }
 
+
+
+        payload.updatedAt = serverTimestamp();
+
         await updateDoc(doc(db, "posts", postId), payload);
         setLastSaved(new Date());
         console.log("💾 Auto-saved");
@@ -218,6 +222,8 @@ export default function NewPostPage() {
       } else {
         payload.scheduledAt = null; // Clear schedule if removed
       }
+
+      payload.updatedAt = serverTimestamp();
 
       await updateDoc(doc(db, "posts", postId), payload);
       alert(finalIsPublished ? "✅ Đã xuất bản!" : (form.scheduledAt ? "✅ Đã lên lịch!" : "✅ Đã lưu bản nháp!"));

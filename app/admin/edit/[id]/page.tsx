@@ -158,6 +158,8 @@ export default function EditPostPage() {
                               payload.scheduledAt = Timestamp.fromDate(new Date(form.scheduledAt));
                         }
 
+                        payload.updatedAt = serverTimestamp();
+
                         await updateDoc(doc(db, "posts", postId), payload);
                         setLastSaved(new Date());
                         console.log("💾 Auto-saved");
