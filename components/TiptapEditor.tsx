@@ -189,19 +189,24 @@ export default function TiptapEditor({
             onClick={onClick}
             disabled={disabled}
             title={title}
-            className={`p-2.5 rounded-lg transition-all ${active
-                    ? "bg-indigo-600 text-white shadow-md"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+            className={`group relative p-2.5 rounded-lg transition-all ${active
+                ? "bg-indigo-600 text-white shadow-md"
+                : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                 } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
         >
             {children}
+            {/* Tooltip */}
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
+                {title}
+                <span className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></span>
+            </span>
         </button>
     );
 
     return (
         <div className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden shadow-lg">
-            {/* Main Toolbar */}
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-300 dark:border-gray-700 p-3 flex flex-wrap gap-1.5">
+            {/* Sticky Toolbar */}
+            <div className="sticky top-0 z-50 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-300 dark:border-gray-700 p-3 flex flex-wrap gap-1.5 shadow-md">
                 {/* Undo/Redo */}
                 <div className="flex gap-1">
                     <ToolbarButton
@@ -227,14 +232,14 @@ export default function TiptapEditor({
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleBold().run()}
                         active={editor.isActive("bold")}
-                        title="Đậm (Ctrl+B)"
+                        title="In đậm (Ctrl+B)"
                     >
                         <FiBold className="h-5 w-5" />
                     </ToolbarButton>
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleItalic().run()}
                         active={editor.isActive("italic")}
-                        title="Nghiêng (Ctrl+I)"
+                        title="In nghiêng (Ctrl+I)"
                     >
                         <FiItalic className="h-5 w-5" />
                     </ToolbarButton>
@@ -255,7 +260,7 @@ export default function TiptapEditor({
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleCode().run()}
                         active={editor.isActive("code")}
-                        title="Code inline"
+                        title="Mã code inline"
                     >
                         <FiCode className="h-5 w-5" />
                     </ToolbarButton>
@@ -268,21 +273,21 @@ export default function TiptapEditor({
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
                         active={editor.isActive("heading", { level: 1 })}
-                        title="Heading 1"
+                        title="Tiêu đề 1"
                     >
                         <BsTypeH1 className="h-5 w-5" />
                     </ToolbarButton>
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                         active={editor.isActive("heading", { level: 2 })}
-                        title="Heading 2"
+                        title="Tiêu đề 2"
                     >
                         <BsTypeH2 className="h-5 w-5" />
                     </ToolbarButton>
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
                         active={editor.isActive("heading", { level: 3 })}
-                        title="Heading 3"
+                        title="Tiêu đề 3"
                     >
                         <BsTypeH3 className="h-5 w-5" />
                     </ToolbarButton>
@@ -295,7 +300,7 @@ export default function TiptapEditor({
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleBulletList().run()}
                         active={editor.isActive("bulletList")}
-                        title="Danh sách gạch đầu dòng"
+                        title="Danh sách dấu đầu dòng"
                     >
                         <FiList className="h-5 w-5" />
                     </ToolbarButton>
@@ -343,7 +348,7 @@ export default function TiptapEditor({
                     <ToolbarButton
                         onClick={() => editor.chain().focus().setTextAlign("justify").run()}
                         active={editor.isActive({ textAlign: "justify" })}
-                        title="Căn đều"
+                        title="Căn đều hai bên"
                     >
                         <FiAlignJustify className="h-5 w-5" />
                     </ToolbarButton>
@@ -353,10 +358,10 @@ export default function TiptapEditor({
 
                 {/* Insert */}
                 <div className="flex gap-1">
-                    <ToolbarButton onClick={addLink} title="Chèn link">
+                    <ToolbarButton onClick={addLink} title="Chèn liên kết">
                         <FiLink className="h-5 w-5" />
                     </ToolbarButton>
-                    <ToolbarButton onClick={addImage} title="Chèn ảnh (hoặc paste URL trực tiếp)">
+                    <ToolbarButton onClick={addImage} title="Chèn hình ảnh (hoặc paste URL)">
                         <FiImage className="h-5 w-5" />
                     </ToolbarButton>
                     <ToolbarButton
@@ -387,7 +392,7 @@ export default function TiptapEditor({
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
                         active={editor.isActive("codeBlock")}
-                        title="Code block"
+                        title="Khối mã code"
                     >
                         <FiCode className="h-6 w-6" />
                     </ToolbarButton>
