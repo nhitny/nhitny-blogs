@@ -342,7 +342,10 @@ export default function BlogSlugPage({
 
           {/* Description */}
           {post.description && (
-            <p className="mb-6 text-lg text-gray-900 dark:text-gray-100 italic border-l-4 border-indigo-600 pl-4 font-semibold">
+            <p
+              className="mb-6 text-lg italic border-l-4 border-indigo-600 pl-4 font-semibold"
+              style={{ color: '#111827' }}
+            >
               {post.description}
             </p>
           )}
