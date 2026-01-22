@@ -40,6 +40,32 @@ export default function PreviewModal({ isOpen, onClose, post }: PreviewModalProp
         return () => document.removeEventListener("keydown", handleEscape);
     }, [isOpen, onClose]);
 
+    // Render Math formulas (KaTeX) in Preview Modal
+    useEffect(() => {
+        if (!isOpen || !post.content) return;
+
+        // Use setTimeout to ensure DOM is ready inside modal
+        const timer = setTimeout(() => {
+            // @ts-ignore
+            import("katex/dist/contrib/auto-render").then((renderMathInElement) => {
+                const article = document.querySelector(".prose");
+                if (article) {
+                    renderMathInElement.default(article as HTMLElement, {
+                        delimiters: [
+                            { left: "$$", right: "$$", display: true },
+                            { left: "$", right: "$", display: false },
+                            { left: "\\(", right: "\\)", display: false },
+                            { left: "\\[", right: "\\]", display: true },
+                        ],
+                        throwOnError: false,
+                    });
+                }
+            });
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, [isOpen, post.content]);
+
     if (!isOpen) return null;
 
     return (

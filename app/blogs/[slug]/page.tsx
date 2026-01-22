@@ -8,6 +8,7 @@ import LikeBtn from "@/components/Blog/LikeBtn";
 import Comments from "@/components/Blog/Comments";
 import Toc, { HeadingItem } from "@/components/Blog/Toc";
 import Image from "next/image";
+import katex from "katex";
 
 // Import highlight.js for syntax highlighting
 import "highlight.js/styles/github.css"; // Light mode
@@ -308,14 +309,18 @@ export default function BlogSlugPage({
   }, [post?.content]);
 
   // Render Math formulas (KaTeX)
+  // Render Math formulas (KaTeX)
   useEffect(() => {
     if (!contentHtml) return;
 
-    // @ts-ignore
-    import("katex/dist/contrib/auto-render").then((renderMathInElement) => {
+    const renderMath = async () => {
+      // 1. Auto-render delimiters ($...$)
+      // @ts-ignore
+      const renderMathInElement = (await import("katex/dist/contrib/auto-render")).default;
       const article = document.querySelector("article.prose");
+
       if (article) {
-        renderMathInElement.default(article as HTMLElement, {
+        renderMathInElement(article as HTMLElement, {
           delimiters: [
             { left: "$$", right: "$$", display: true },
             { left: "$", right: "$", display: false },
@@ -324,8 +329,33 @@ export default function BlogSlugPage({
           ],
           throwOnError: false,
         });
+
+        // 2. Explicitly render Tiptap math nodes (.math-inline, .math-display)
+        const mathNodes = article.querySelectorAll(".math-inline, .math-display");
+        mathNodes.forEach((node) => {
+          // If already rendered (has katex class), skip
+          if (node.querySelector(".katex")) return;
+
+          const tex = node.textContent || "";
+          // Strip $ wrappers if present (Tiptap usually includes them)
+          const cleanTex = tex.replace(/^\$+|\$+$/g, "");
+          const isDisplay = node.classList.contains("math-display") || tex.startsWith("$$");
+
+          try {
+            katex.render(cleanTex, node as HTMLElement, {
+              throwOnError: false,
+              displayMode: isDisplay,
+            });
+          } catch (err) {
+            console.error("KaTeX Error:", err);
+          }
+        });
       }
-    });
+    };
+
+    // Small delay to ensure DOM is ready
+    const t = setTimeout(renderMath, 100);
+    return () => clearTimeout(t);
   }, [contentHtml]);
 
   if (!post) return <p className="p-6">Đang tải bài viết...</p>;
