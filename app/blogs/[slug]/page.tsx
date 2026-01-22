@@ -307,6 +307,27 @@ export default function BlogSlugPage({
     return calculateReadingTime(post?.content || "");
   }, [post?.content]);
 
+  // Render Math formulas (KaTeX)
+  useEffect(() => {
+    if (!contentHtml) return;
+
+    // @ts-ignore
+    import("katex/dist/contrib/auto-render").then((renderMathInElement) => {
+      const article = document.querySelector("article.prose");
+      if (article) {
+        renderMathInElement.default(article as HTMLElement, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true },
+          ],
+          throwOnError: false,
+        });
+      }
+    });
+  }, [contentHtml]);
+
   if (!post) return <p className="p-6">Đang tải bài viết...</p>;
 
   // JSON-LD Structured Data
