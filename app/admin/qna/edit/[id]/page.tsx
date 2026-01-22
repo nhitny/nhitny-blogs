@@ -1,16 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/firebase/firebaseConfig";
 import TiptapEditor from "@/components/Blog/TiptapEditor";
 import { toast } from "react-hot-toast";
 import { FiEdit, FiEye, FiChevronDown } from "react-icons/fi";
 
-export default function NewQnaPage() {
+export default function EditQnaPage() {
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
+    const params = useParams();
+    const id = params.id as string;
+
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
 
     const [question, setQuestion] = useState("");
@@ -19,6 +23,36 @@ export default function NewQnaPage() {
     const [difficulty, setDifficulty] = useState("Medium");
     const [source, setSource] = useState("");
 
+    // Fetch question data
+    useEffect(() => {
+        const fetchQuestion = async () => {
+            if (!id) return;
+            try {
+                const docRef = doc(db, "interview_qna", id);
+                const snap = await getDoc(docRef);
+
+                if (snap.exists()) {
+                    const data = snap.data();
+                    setQuestion(data.question || "");
+                    setAnswer(data.answer || "");
+                    setTopic(data.topic || "");
+                    setDifficulty(data.difficulty || "Medium");
+                    setSource(data.source || "");
+                } else {
+                    toast.error("Không tìm thấy câu hỏi!");
+                    router.push("/admin/dashboard/qna");
+                }
+            } catch (error) {
+                console.error("Error fetching question:", error);
+                toast.error("Lỗi khi tải dữ liệu!");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchQuestion();
+    }, [id, router]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!question.trim() || !answer.trim() || !topic.trim()) {
@@ -26,37 +60,45 @@ export default function NewQnaPage() {
             return;
         }
 
-        setLoading(true);
+        setSaving(true);
         try {
-            await addDoc(collection(db, "interview_qna"), {
+            const docRef = doc(db, "interview_qna", id);
+            await updateDoc(docRef, {
                 question: question.trim(),
-                answer: answer, // HTML from Tiptap
+                answer: answer,
                 topic: topic.trim(),
                 difficulty,
                 source: source.trim(),
-                createdAt: serverTimestamp(),
-                views: 0
+                updatedAt: serverTimestamp(),
             });
 
-            toast.success("Đã thêm câu hỏi mới thành công!");
+            toast.success("Cập nhật thành công!");
 
-            // Redirect to dashboard after short delay
+            // Redirect back to dashboard
             setTimeout(() => {
                 router.push("/admin/dashboard/qna");
             }, 1000);
 
         } catch (error) {
-            console.error("Lỗi khi thêm Q&A:", error);
+            console.error("Lỗi khi cập nhật Q&A:", error);
             toast.error("Có lỗi xảy ra, vui lòng thử lại!");
-            setLoading(false); // Only stop loading on error, keep loading on success for redirect
+            setSaving(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="text-gray-500">Đang tải dữ liệu...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="mx-auto max-w-4xl p-6">
             <div className="mb-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    Thêm Câu Hỏi Mới
+                    Chỉnh Sửa Câu Hỏi
                 </h1>
                 <button
                     onClick={() => router.push("/admin/dashboard/qna")}
@@ -149,7 +191,7 @@ export default function NewQnaPage() {
                         <textarea
                             value={question}
                             onChange={(e) => setQuestion(e.target.value)}
-                            placeholder="Ví dụ: RAG là gì và tại sao nó giảm Hallucination?"
+                            placeholder="Nhập câu hỏi..."
                             rows={2}
                             className="w-full rounded-lg border border-gray-300 bg-white p-3 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             required
@@ -166,7 +208,6 @@ export default function NewQnaPage() {
                                 type="text"
                                 value={topic}
                                 onChange={(e) => setTopic(e.target.value)}
-                                placeholder="NLP, RAG,..."
                                 className="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                                 required
                             />
@@ -195,7 +236,6 @@ export default function NewQnaPage() {
                                 type="text"
                                 value={source}
                                 onChange={(e) => setSource(e.target.value)}
-                                placeholder="Link github, blog..."
                                 className="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
                         </div>
@@ -219,10 +259,10 @@ export default function NewQnaPage() {
                     <div className="flex justify-end pt-4">
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={saving}
                             className="rounded-lg bg-indigo-600 px-6 py-2.5 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-gray-900"
                         >
-                            {loading ? "Đang lưu..." : "Lưu Câu Hỏi"}
+                            {saving ? "Đang lưu..." : "Cập nhật"}
                         </button>
                     </div>
                 </form>

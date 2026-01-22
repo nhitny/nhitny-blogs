@@ -4,7 +4,22 @@ import { useState, useEffect } from "react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "@/firebase/firebaseConfig";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiChevronDown, FiChevronUp, FiSearch, FiFilter } from "react-icons/fi";
+import { FiChevronDown, FiSearch, FiHash, FiZap, FiBookOpen, FiGrid } from "react-icons/fi";
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+};
 
 interface Question {
     id: string;
@@ -20,6 +35,38 @@ export default function InterviewPage() {
     const [selectedTopic, setSelectedTopic] = useState<string>("All");
     const [searchTerm, setSearchTerm] = useState("");
     const [openIds, setOpenIds] = useState<Set<string>>(new Set());
+
+    // Handle URL query param
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const topicParam = params.get("topic");
+            const idParam = params.get("id");
+
+            if (topicParam) {
+                setSelectedTopic(topicParam);
+            }
+
+            if (idParam) {
+                setOpenIds(prev => {
+                    const newSet = new Set(prev);
+                    newSet.add(idParam);
+                    return newSet;
+                });
+
+                // Wait for render then scroll
+                setTimeout(() => {
+                    const element = document.getElementById(`question-${idParam}`);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Add highlight effect
+                        element.classList.add('ring-2', 'ring-indigo-500');
+                        setTimeout(() => element.classList.remove('ring-2', 'ring-indigo-500'), 2000);
+                    }
+                }, 500);
+            }
+        }
+    }, [questions]);
 
     useEffect(() => {
         const fetchQuestions = async () => {
@@ -44,8 +91,13 @@ export default function InterviewPage() {
         fetchQuestions();
     }, []);
 
-    // Get unique topics
-    const topics = ["All", ...Array.from(new Set(questions.map((q) => q.topic)))];
+    // Get unique topics and count
+    const topicsMap = questions.reduce((acc, q) => {
+        acc[q.topic] = (acc[q.topic] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
+    const sortedTopics = Object.keys(topicsMap).sort();
 
     // Filter questions
     const filteredQuestions = questions.filter((q) => {
@@ -67,115 +119,229 @@ export default function InterviewPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20 dark:bg-gray-950">
-            {/* Header */}
-            <div className="bg-white py-12 shadow-sm dark:bg-gray-900">
+        <div className="min-h-screen bg-gray-50 pb-20 dark:bg-[#0c111d] transition-colors duration-300">
+
+            {/* Decorative Background Mesh */}
+            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-200/30 blur-[100px] dark:bg-purple-900/10"></div>
+                <div className="absolute top-[20%] right-[-5%] w-[30%] h-[30%] rounded-full bg-indigo-200/30 blur-[100px] dark:bg-indigo-900/10"></div>
+                <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[40%] rounded-full bg-pink-200/20 blur-[100px] dark:bg-pink-900/10"></div>
+            </div>
+
+            {/* Header Banner */}
+            <div className="relative z-10 pt-20 pb-12">
                 <div className="mx-auto max-w-7xl px-6 text-center">
-                    <h1 className="mb-4 text-4xl font-bold text-gray-900 dark:text-gray-100">
-                        Thư Viện Phỏng Vấn AI & NLP
-                    </h1>
-                    <p className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-                        Tổng hợp các câu hỏi phỏng vấn thường gặp về RAG, LLMs, Machine Learning và Engineering.
-                    </p>
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                    >
+                        <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-100 px-4 py-1.5 text-sm font-semibold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 ring-1 ring-indigo-500/20">
+                            <FiZap className="h-4 w-4" /> Interview Prep
+                        </span>
+                        <h1 className="mb-6 text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+                            Thư Viện <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">Interview Q&A</span>
+                        </h1>
+                        <p className="mx-auto max-w-2xl text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+                            Tổng hợp <b>{questions.length}</b> câu hỏi phỏng vấn thực tế về AI, Machine Learning, RAG và Engineering giúp bạn tự tin chinh phục nhà tuyển dụng.
+                        </p>
+                    </motion.div>
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className="mx-auto mt-12 max-w-5xl px-6">
-                {/* Filters */}
-                <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    {/* Topic Filter */}
-                    <div className="flex flex-wrap gap-2">
-                        {topics.map((t) => (
-                            <button
-                                key={t}
-                                onClick={() => setSelectedTopic(t)}
-                                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${selectedTopic === t
-                                        ? "bg-indigo-600 text-white"
-                                        : "bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                                    }`}
-                            >
-                                {t}
-                            </button>
-                        ))}
-                    </div>
+            <div className="relative z-10 mx-auto max-w-7xl px-6">
+                <div className="flex flex-col lg:flex-row gap-10">
 
-                    {/* Search */}
-                    <div className="relative w-full md:w-64">
-                        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm câu hỏi..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                        />
-                    </div>
-                </div>
+                    {/* Left Sidebar - Topics (Glassmorphism) */}
+                    <aside className="w-full lg:w-72 flex-shrink-0">
+                        <div className="sticky top-24">
+                            <div className="rounded-2xl border border-gray-200/50 bg-white/70 backdrop-blur-xl p-6 shadow-xl dark:border-gray-800/50 dark:bg-gray-900/60 dark:shadow-2xl">
+                                <h3 className="mb-6 flex items-center gap-2 font-bold text-gray-900 dark:text-white uppercase text-xs tracking-widest text-opacity-70">
+                                    <FiGrid /> Chủ Đề Phổ Biến
+                                </h3>
 
-                {/* Questions List */}
-                {loading ? (
-                    <div className="text-center py-20">
-                        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-indigo-600 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-                        <p className="mt-4 text-gray-500">Đang tải câu hỏi...</p>
-                    </div>
-                ) : filteredQuestions.length === 0 ? (
-                    <div className="rounded-lg bg-white p-12 text-center text-gray-500 dark:bg-gray-900">
-                        Không tìm thấy câu hỏi nào phù hợp.
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        {filteredQuestions.map((q) => (
-                            <div
-                                key={q.id}
-                                className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
-                            >
-                                <div
-                                    onClick={() => toggleQuestion(q.id)}
-                                    className="flex cursor-pointer items-start justify-between p-6"
-                                >
-                                    <div className="flex-1 pr-6">
-                                        <div className="mb-2 flex items-center gap-2">
-                                            <span className={`rounded px-2 py-0.5 text-xs font-semibold
-                        ${q.difficulty === 'Easy' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
-                                                    q.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                                                        'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}
-                     `}>
-                                                {q.difficulty}
-                                            </span>
-                                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                                {q.topic}
-                                            </span>
-                                        </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                            {q.question}
-                                        </h3>
-                                    </div>
-                                    <div className={`transition-transform duration-200 ${openIds.has(q.id) ? "rotate-180" : ""}`}>
-                                        <FiChevronDown className="h-6 w-6 text-gray-400" />
-                                    </div>
-                                </div>
+                                <div className="flex flex-row overflow-x-auto pb-4 lg:flex-col lg:pb-0 gap-2 no-scrollbar">
+                                    <button
+                                        onClick={() => setSelectedTopic("All")}
+                                        className={`group flex items-center justify-between whitespace-nowrap rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300 ${selectedTopic === "All"
+                                            ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/30 transform scale-[1.02]"
+                                            : "bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-gray-800/50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                                            }`}
+                                    >
+                                        <span className="flex items-center gap-3">
+                                            <FiHash className={selectedTopic === "All" ? "text-indigo-200" : "text-gray-400"} />
+                                            Tất cả
+                                        </span>
+                                        <span className={`flex h-6 min-w-[1.5rem] items-center justify-center rounded-md px-1.5 text-xs font-bold ${selectedTopic === "All"
+                                            ? "bg-white/20 text-white"
+                                            : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                            }`}>
+                                            {questions.length}
+                                        </span>
+                                    </button>
 
-                                <AnimatePresence>
-                                    {openIds.has(q.id) && (
-                                        <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: "auto", opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
+                                    <div className="my-2 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-gray-700 lg:block hidden"></div>
+
+                                    {sortedTopics.map((topic) => (
+                                        <button
+                                            key={topic}
+                                            onClick={() => setSelectedTopic(topic)}
+                                            className={`group flex items-center justify-between whitespace-nowrap rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300 ${selectedTopic === topic
+                                                ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/30 transform scale-[1.02]"
+                                                : "bg-transparent text-gray-600 hover:bg-white hover:shadow-sm dark:text-gray-400 dark:hover:bg-gray-800/80 dark:hover:text-white"
+                                                }`}
                                         >
-                                            <div className="border-t border-gray-100 bg-gray-50 p-6 dark:border-gray-800 dark:bg-gray-800/50">
-                                                <div
-                                                    className="prose prose-sm max-w-none dark:prose-invert"
-                                                    dangerouslySetInnerHTML={{ __html: q.answer }}
-                                                />
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
+                                            <span className="flex items-center gap-2">
+                                                {topic}
+                                            </span>
+                                            <span className={`flex h-6 min-w-[1.5rem] items-center justify-center rounded-md px-1.5 text-xs font-bold ${selectedTopic === topic
+                                                ? "bg-white/20 text-white"
+                                                : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:group-hover:bg-gray-700 dark:group-hover:text-gray-300"
+                                                }`}>
+                                                {topicsMap[topic]}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        ))}
-                    </div>
-                )}
+                        </div>
+                    </aside>
+
+                    {/* Right Content */}
+                    <main className="flex-1 min-w-0">
+                        {/* Search Bar - Floating Glass */}
+                        <div className="mb-8 relative group">
+                            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 opacity-20 blur transition duration-500 group-hover:opacity-40"></div>
+                            <div className="relative">
+                                <FiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 group-focus-within:text-indigo-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Tìm kiếm câu hỏi (VD: RAG, Transformer, React...)"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full rounded-2xl border-0 bg-white py-4 pl-14 pr-6 shadow-xl shadow-indigo-50/50 placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500/50 dark:bg-gray-900/80 dark:text-white dark:shadow-none dark:placeholder:text-gray-500 backdrop-blur-sm"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Questions List with Staggered Animation */}
+                        {loading ? (
+                            <div className="flex flex-col items-center justify-center py-20">
+                                <div className="relative">
+                                    <div className="h-16 w-16 rounded-full border-b-2 border-indigo-600 animate-spin"></div>
+                                    <div className="absolute top-0 h-16 w-16 rounded-full border-t-2 border-purple-500 animate-spin" style={{ animationDirection: "reverse", animationDuration: "1s" }}></div>
+                                </div>
+                                <p className="mt-6 text-gray-500 font-medium animate-pulse">Đang tải tri thức...</p>
+                            </div>
+                        ) : filteredQuestions.length === 0 ? (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="rounded-3xl border border-dashed border-gray-300 bg-white/50 p-16 text-center dark:border-gray-700 dark:bg-gray-900/30 backdrop-blur-sm"
+                            >
+                                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                                    <FiBookOpen className="h-8 w-8 text-gray-400" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Không tìm thấy kết quả</h3>
+                                <p className="text-gray-500 mb-6">Không có câu hỏi nào khớp với từ khóa "{searchTerm}" hoặc chủ đề này.</p>
+                                <button
+                                    onClick={() => { setSearchTerm(""); setSelectedTopic("All") }}
+                                    className="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white shadow-lg transition-transform hover:scale-105 active:scale-95 hover:bg-indigo-700"
+                                >
+                                    Xóa bộ lọc & Thử lại
+                                </button>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key={selectedTopic + searchTerm}
+                                variants={containerVariants}
+                                initial="hidden"
+                                animate="visible"
+                                className="grid grid-cols-1 gap-6 md:grid-cols-2 items-start"
+                            >
+                                {filteredQuestions.map((q) => (
+                                    <motion.div
+                                        layout
+                                        id={`question-${q.id}`}
+                                        key={q.id}
+                                        variants={itemVariants}
+                                        className={`group overflow-hidden rounded-2xl border transition-all duration-300 
+                      ${openIds.has(q.id)
+                                                ? "bg-white border-indigo-200 shadow-xl shadow-indigo-100/50 dark:bg-gray-800 dark:border-indigo-500/30 dark:shadow-none transform scale-[1.01]"
+                                                : "bg-white/60 border-gray-200 shadow-sm hover:shadow-md hover:bg-white hover:-translate-y-1 dark:bg-gray-900/40 dark:border-gray-800 dark:hover:bg-gray-800/80 backdrop-blur-md"
+                                            }
+                    `}
+                                    >
+                                        <div
+                                            onClick={() => toggleQuestion(q.id)}
+                                            className="flex cursor-pointer items-start justify-between p-6 md:p-7 relative"
+                                        >
+                                            {/* Side Highlight Bar */}
+                                            <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-colors duration-300 ${openIds.has(q.id) ? "bg-gradient-to-b from-indigo-500 to-purple-600" : "bg-transparent group-hover:bg-indigo-200 dark:group-hover:bg-gray-700"
+                                                }`}></div>
+
+                                            <div className="flex-1 pr-6 pl-2">
+                                                <div className="mb-3 flex items-center gap-3 flex-wrap">
+                                                    <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold tracking-wide uppercase shadow-sm
+                            ${q.difficulty === 'Easy' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300' :
+                                                            q.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-300' :
+                                                                'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300'}
+                         `}>
+                                                        {q.difficulty}
+                                                    </span>
+                                                    <span className="inline-flex items-center rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-bold text-gray-500 shadow-sm dark:bg-gray-700 dark:text-gray-300">
+                                                        #{q.topic}
+                                                    </span>
+                                                </div>
+                                                <h3 className={`text-xl font-bold leading-snug transition-colors ${openIds.has(q.id)
+                                                    ? "text-indigo-700 dark:text-indigo-300"
+                                                    : "text-gray-800 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
+                                                    }`}>
+                                                    {q.question}
+                                                </h3>
+                                            </div>
+                                            <div className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${openIds.has(q.id)
+                                                ? "rotate-180 border-indigo-200 bg-indigo-50 text-indigo-600 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300"
+                                                : "border-gray-200 bg-gray-50 text-gray-400 group-hover:border-indigo-200 group-hover:text-indigo-500 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-500"
+                                                }`}>
+                                                <FiChevronDown className="h-5 w-5" />
+                                            </div>
+                                        </div>
+
+                                        <AnimatePresence>
+                                            {openIds.has(q.id) && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: "auto", opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                >
+                                                    <div className="border-t border-gray-100 dark:border-gray-700/50">
+                                                        <div className="bg-gray-50/50 p-6 md:p-8 dark:bg-gray-900/30">
+                                                            <div
+                                                                className="prose prose-lg prose-indigo max-w-none dark:prose-invert 
+                                    prose-headings:font-bold prose-headings:text-gray-800 dark:prose-headings:text-gray-100
+                                    prose-p:text-gray-600 dark:prose-p:text-gray-300 prose-p:leading-relaxed
+                                    prose-code:text-indigo-600 dark:prose-code:text-indigo-300
+                                    prose-pre:bg-gray-900 dark:prose-pre:bg-black/50 prose-pre:shadow-lg prose-pre:border prose-pre:border-gray-700/50"
+                                                                dangerouslySetInnerHTML={{ __html: q.answer }}
+                                                            />
+                                                        </div>
+                                                        <div className="bg-gray-100/50 px-8 py-3 dark:bg-gray-800/50 flex justify-end">
+                                                            <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                                                                Nhitny Blog • Interview Library
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                ))}
+                            </motion.div>
+                        )}
+                    </main>
+                </div>
             </div>
         </div>
     );

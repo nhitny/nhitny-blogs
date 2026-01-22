@@ -15,7 +15,7 @@ import {
     deleteDoc,
 } from "firebase/firestore";
 import ConfirmModal from "@/components/UI/ConfirmModal";
-import { FiHelpCircle, FiTrendingUp, FiLayers, FiTrash2, FiEdit } from "react-icons/fi";
+import { FiHelpCircle, FiTrendingUp, FiLayers, FiTrash2, FiEdit, FiEye } from "react-icons/fi";
 
 type Question = {
     id: string;
@@ -261,7 +261,13 @@ export default function QnADashboard() {
                                             <tr key={q.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 group transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="text-sm font-medium text-gray-900 dark:text-gray-100 max-w-md">
-                                                        {q.question}
+                                                        <Link
+                                                            href={`/interview?topic=${encodeURIComponent(q.topic)}&id=${q.id}`}
+                                                            target="_blank"
+                                                            className="hover:text-indigo-600 hover:underline transition-colors"
+                                                        >
+                                                            {q.question}
+                                                        </Link>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -286,11 +292,27 @@ export default function QnADashboard() {
                                                 </td>
                                                 <td className="px-6 py-4 text-right text-sm">
                                                     <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Link
+                                                            href={`/interview?topic=${encodeURIComponent(q.topic)}`}
+                                                            target="_blank"
+                                                            className="text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                                            title="Xem trên web"
+                                                        >
+                                                            <FiEye size={18} />
+                                                        </Link>
+                                                        <Link
+                                                            href={`/admin/qna/edit/${q.id}`}
+                                                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                            title="Sửa"
+                                                        >
+                                                            <FiEdit size={18} />
+                                                        </Link>
                                                         <button
                                                             onClick={() => handleDeleteClick(q.id, q.question)}
-                                                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 font-medium"
+                                                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                                            title="Xóa"
                                                         >
-                                                            Delete
+                                                            <FiTrash2 size={18} />
                                                         </button>
                                                     </div>
                                                 </td>
