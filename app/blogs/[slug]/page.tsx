@@ -13,6 +13,7 @@ import katex from "katex";
 // Import highlight.js for syntax highlighting
 import "highlight.js/styles/github.css"; // Light mode
 import "highlight.js/styles/github-dark.css"; // Dark mode
+import "katex/dist/katex.min.css";
 
 // Tạo slug từ text (dùng cho id heading)
 function slugify(text: string) {
@@ -314,49 +315,62 @@ export default function BlogSlugPage({
     if (!contentHtml) return;
 
     const renderMath = async () => {
-      // 1. Auto-render delimiters ($...$)
-      // @ts-ignore
-      const renderMathInElement = (await import("katex/dist/contrib/auto-render")).default;
-      const article = document.querySelector("article.prose");
+      try {
+        // @ts-ignore
+        const renderMathInElement = (await import("katex/dist/contrib/auto-render")).default;
+        const article = document.querySelector("article.prose");
 
-      if (article) {
-        renderMathInElement(article as HTMLElement, {
-          delimiters: [
-            { left: "$$", right: "$$", display: true },
-            { left: "$", right: "$", display: false },
-            { left: "\\(", right: "\\)", display: false },
-            { left: "\\[", right: "\\]", display: true },
-          ],
-          throwOnError: false,
-        });
+        if (article) {
+          // 1. Auto-render delimiters
+          renderMathInElement(article as HTMLElement, {
+            delimiters: [
+              { left: "$$", right: "$$", display: true },
+              { left: "$", right: "$", display: false },
+              { left: "\\(", right: "\\)", display: false },
+              { left: "\\[", right: "\\]", display: true },
+            ],
+            throwOnError: false,
+            output: "html",
+          });
 
-        // 2. Explicitly render Tiptap math nodes (.math-inline, .math-display)
-        const mathNodes = article.querySelectorAll(".math-inline, .math-display");
-        mathNodes.forEach((node) => {
-          // If already rendered (has katex class), skip
-          if (node.querySelector(".katex")) return;
+          // 2. Fallback for Explicit Tiptap Math Nodes
+          const mathNodes = article.querySelectorAll(".math-inline, .math-display");
+          mathNodes.forEach((node) => {
+            if (node.querySelector(".katex")) return; // Skip if already rendered
 
-          const tex = node.textContent || "";
-          // Strip $ wrappers if present (Tiptap usually includes them)
-          const cleanTex = tex.replace(/^\$+|\$+$/g, "");
-          const isDisplay = node.classList.contains("math-display") || tex.startsWith("$$");
+            let tex = node.textContent || "";
+            // Remove outer $ if present
+            tex = tex.replace(/^\$+|\$+$/g, "");
 
-          try {
-            katex.render(cleanTex, node as HTMLElement, {
-              throwOnError: false,
-              displayMode: isDisplay,
-            });
-          } catch (err) {
-            console.error("KaTeX Error:", err);
-          }
-        });
+            const isDisplay = node.classList.contains("math-display") || node.tagName === "DIV";
+
+            try {
+              katex.render(tex, node as HTMLElement, {
+                throwOnError: false,
+                displayMode: isDisplay,
+                output: "html",
+              });
+            } catch (err) {
+              console.error("KaTeX Fallback Error:", err);
+            }
+          });
+        }
+      } catch (e) {
+        console.error("KaTeX Loading Error:", e);
       }
     };
 
-    // Small delay to ensure DOM is ready
-    const t = setTimeout(renderMath, 100);
+    // Run twice to ensure hydration
+    // Instant
+    renderMath();
+
+    // Delayed (covers slower DOM updates)
+    const t = setTimeout(renderMath, 500);
+
     return () => clearTimeout(t);
   }, [contentHtml]);
+
+  if (!post) return <p className="p-6">Đang tải bài viết...</p>;
 
   if (!post) return <p className="p-6">Đang tải bài viết...</p>;
 
