@@ -457,9 +457,9 @@ export default function BlogSlugPage({
           <div className="mt-12 border-t border-gray-200 pt-8 dark:border-gray-700">
             <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
               <p className="text-center text-sm italic text-gray-600 dark:text-gray-400">
-                "Đây là bài viết được tổng hợp từ quá trình tìm hiểu của tác giả, có thể còn nhiều thiếu sót.
+                &ldquo;Đây là bài viết được tổng hợp từ quá trình tìm hiểu của tác giả, có thể còn nhiều thiếu sót.
                 <br />
-                Rất mong nhận được sự góp ý từ mọi người để nội dung ngày càng hoàn thiện hơn! ❤️"
+                Rất mong nhận được sự góp ý từ mọi người để nội dung ngày càng hoàn thiện hơn! ❤️&rdquo;
               </p>
             </div>
           </div>

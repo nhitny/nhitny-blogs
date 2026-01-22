@@ -243,7 +243,7 @@ export default function InterviewPage() {
                                     <FiBookOpen className="h-8 w-8 text-gray-400" />
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Không tìm thấy kết quả</h3>
-                                <p className="text-gray-500 mb-6">Không có câu hỏi nào khớp với từ khóa "{searchTerm}" hoặc chủ đề này.</p>
+                                <p className="text-gray-500 mb-6">Không có câu hỏi nào khớp với từ khóa &ldquo;{searchTerm}&rdquo; hoặc chủ đề này.</p>
                                 <button
                                     onClick={() => { setSearchTerm(""); setSelectedTopic("All") }}
                                     className="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white shadow-lg transition-transform hover:scale-105 active:scale-95 hover:bg-indigo-700"
