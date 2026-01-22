@@ -8,12 +8,11 @@ import LikeBtn from "@/components/Blog/LikeBtn";
 import Comments from "@/components/Blog/Comments";
 import Toc, { HeadingItem } from "@/components/Blog/Toc";
 import Image from "next/image";
+import Script from "next/script";
 import katex from "katex";
 
 // Import highlight.js for syntax highlighting
-import "highlight.js/styles/github.css"; // Light mode
 import "highlight.js/styles/github-dark.css"; // Dark mode
-import "katex/dist/katex.min.css";
 
 // Tạo slug từ text (dùng cho id heading)
 function slugify(text: string) {
@@ -393,6 +392,28 @@ export default function BlogSlugPage({
 
   return (
     <div className="mx-auto max-w-7xl px-6 pt-8 pb-24">
+      {/* KaTeX CDN */}
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+      <Script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" strategy="lazyOnload" />
+      <Script
+        src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        strategy="lazyOnload"
+        onLoad={() => {
+          // @ts-ignore
+          if (window.renderMathInElement) {
+            // @ts-ignore
+            window.renderMathInElement(document.body, {
+              delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+              ],
+              throwOnError: false
+            });
+          }
+        }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
