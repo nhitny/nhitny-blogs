@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { collection, getDocs, orderBy, query, doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/firebase/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiChevronDown, FiSearch, FiHash, FiZap, FiBookOpen, FiGrid, FiLock } from "react-icons/fi";
 
@@ -181,12 +182,12 @@ export default function InterviewPage() {
                     <p className="mb-8 text-gray-600 dark:text-gray-400">
                         Trang Interview Q&A hiện đang được cập nhật và tạm thời không khả dụng. Vui lòng quay lại sau!
                     </p>
-                    <a
+                    <Link
                         href="/"
                         className="inline-block rounded-lg bg-indigo-600 px-6 py-3 text-white hover:bg-indigo-700 transition-colors"
                     >
                         Quay về trang chủ
-                    </a>
+                    </Link>
                 </div>
             </div>
         );
