@@ -7,6 +7,7 @@ import { db } from "@/firebase/firebaseConfig";
 import LikeBtn from "@/components/Blog/LikeBtn";
 import Comments from "@/components/Blog/Comments";
 import Toc, { HeadingItem } from "@/components/Blog/Toc";
+import Image from "next/image";
 
 // Import highlight.js for syntax highlighting
 import "highlight.js/styles/github.css"; // Light mode
@@ -308,8 +309,29 @@ export default function BlogSlugPage({
 
   if (!post) return <p className="p-6">Đang tải bài viết...</p>;
 
+  // JSON-LD Structured Data
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    image: [post.thumbnail || "https://nhitny-blogs.vercel.app/og-image.png"],
+    datePublished: post.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+    dateModified: post.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+    author: [{
+      "@type": "Person",
+      name: "Nhitny",
+      url: "https://nhitny-blogs.vercel.app"
+    }],
+    description: post.excerpt || post.title,
+    articleBody: post.content?.substring(0, 160) + "..."
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-6 pt-8 pb-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Lưới 2 cột: TOC trái + nội dung phải */}
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
         {/* TOC trái */}
@@ -323,11 +345,15 @@ export default function BlogSlugPage({
         <div className="lg:col-span-8">
           {/* Ảnh header */}
           {post.headerImage && (
-            <img
-              src={post.headerImage}
-              alt={post.title}
-              className="mb-6 h-72 w-full rounded-lg object-cover"
-            />
+            <div className="relative mb-6 h-72 w-full overflow-hidden rounded-lg">
+              <Image
+                src={post.headerImage}
+                alt={post.title}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
           )}
 
           {/* Tags ở đầu */}
