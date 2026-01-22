@@ -13,6 +13,7 @@ import {
     orderBy,
     query,
     deleteDoc,
+    setDoc,
 } from "firebase/firestore";
 import ConfirmModal from "@/components/UI/ConfirmModal";
 import { FiHelpCircle, FiTrendingUp, FiLayers, FiTrash2, FiEdit, FiEye } from "react-icons/fi";
@@ -45,8 +46,13 @@ export default function QnADashboard() {
         hardCount: 0,
     });
 
+
     // Topics breakdown
     const [topicsBreakdown, setTopicsBreakdown] = useState<Record<string, number>>({});
+
+    // Public visibility toggle
+    const [isPublic, setIsPublic] = useState(true);
+    const [togglingVisibility, setTogglingVisibility] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -90,7 +96,43 @@ export default function QnADashboard() {
 
         setQuestions(data);
         calculateStats(data);
+
+        // Fetch settings
+        await fetchSettings();
+
         setLoading(false);
+    };
+
+    const fetchSettings = async () => {
+        try {
+            const settingsRef = doc(db, "settings", "interview_qna");
+            const settingsSnap = await getDoc(settingsRef);
+
+            if (settingsSnap.exists()) {
+                setIsPublic(settingsSnap.data().isPublic ?? true);
+            } else {
+                // Initialize if doesn't exist
+                await setDoc(settingsRef, { isPublic: true });
+                setIsPublic(true);
+            }
+        } catch (error) {
+            console.error("Error fetching settings:", error);
+        }
+    };
+
+    const toggleVisibility = async () => {
+        setTogglingVisibility(true);
+        try {
+            const settingsRef = doc(db, "settings", "interview_qna");
+            const newValue = !isPublic;
+            await setDoc(settingsRef, { isPublic: newValue });
+            setIsPublic(newValue);
+        } catch (error) {
+            console.error("Error toggling visibility:", error);
+            alert("Lỗi khi cập nhật trạng thái!");
+        } finally {
+            setTogglingVisibility(false);
+        }
     };
 
     const calculateStats = (questions: Question[]) => {
@@ -178,6 +220,40 @@ export default function QnADashboard() {
                 >
                     + Thêm câu hỏi
                 </Link>
+            </div>
+
+            {/* Visibility Toggle */}
+            <div className="mb-6 rounded-xl border border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 shadow-sm dark:border-gray-700 dark:from-gray-800 dark:to-gray-800">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm dark:bg-gray-700">
+                            <FiEye className={`h-6 w-6 ${isPublic ? 'text-green-500' : 'text-gray-400'}`} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 dark:text-white">
+                                Trạng thái trang Interview
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {isPublic ? (
+                                    <span className="text-green-600 dark:text-green-400">✓ Đang hiển thị công khai</span>
+                                ) : (
+                                    <span className="text-orange-600 dark:text-orange-400">⚠ Đang ẩn (chỉ admin xem được)</span>
+                                )}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={toggleVisibility}
+                        disabled={togglingVisibility}
+                        className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 ${isPublic ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+                            }`}
+                    >
+                        <span
+                            className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform ${isPublic ? 'translate-x-7' : 'translate-x-1'
+                                }`}
+                        />
+                    </button>
+                </div>
             </div>
 
             {/* Stats Cards */}

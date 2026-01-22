@@ -1,5 +1,6 @@
 import BlogHeader from "@/components/Blog/BlogHeader";
 import BlogsList from "@/components/Blog/BlogsList";
+import InterviewSection from "@/components/Blog/InterviewSection";
 import { getAllBlogPosts, getAllTopics } from "@/Lib/Data";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,9 @@ export default async function BlogsPage() {
       <main className="mx-auto max-w-[1400px] px-6 pb-20">
         <BlogsList blogs={blogs} />
       </main>
+
+      {/* INTERVIEW Q&A SECTION */}
+      <InterviewSection />
     </>
   );
 }

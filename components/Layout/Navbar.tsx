@@ -38,7 +38,6 @@ export default function Navbar() {
   const navLinks = [
     { href: "/", label: "Trang chủ", icon: <FiHome className="h-5 w-5" /> },
     { href: "/blogs", label: "Bài viết", icon: <FiBookOpen className="h-5 w-5" /> },
-    { href: "/interview", label: "Phỏng vấn", icon: <FiHelpCircle className="h-5 w-5" /> },
     { href: "/about", label: "Giới thiệu", icon: <FiInfo className="h-5 w-5" /> },
   ];
 

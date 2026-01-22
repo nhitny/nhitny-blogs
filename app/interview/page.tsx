@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
-import { db } from "@/firebase/firebaseConfig";
+import { collection, getDocs, orderBy, query, doc, getDoc } from "firebase/firestore";
+import { db, auth } from "@/firebase/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiChevronDown, FiSearch, FiHash, FiZap, FiBookOpen, FiGrid } from "react-icons/fi";
+import { FiChevronDown, FiSearch, FiHash, FiZap, FiBookOpen, FiGrid, FiLock } from "react-icons/fi";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -35,6 +36,42 @@ export default function InterviewPage() {
     const [selectedTopic, setSelectedTopic] = useState<string>("All");
     const [searchTerm, setSearchTerm] = useState("");
     const [openIds, setOpenIds] = useState<Set<string>>(new Set());
+
+    // Access control
+    const [isPublic, setIsPublic] = useState(true);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [checkingAccess, setCheckingAccess] = useState(true);
+
+    // Check access control
+    useEffect(() => {
+        const checkAccess = async () => {
+            try {
+                // Check if page is public
+                const settingsRef = doc(db, "settings", "interview_qna");
+                const settingsSnap = await getDoc(settingsRef);
+                const pageIsPublic = settingsSnap.exists() ? (settingsSnap.data().isPublic ?? true) : true;
+                setIsPublic(pageIsPublic);
+
+                // Check if user is admin
+                const unsub = onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        const userRef = doc(db, "users", user.uid);
+                        const userSnap = await getDoc(userRef);
+                        const userIsAdmin = userSnap.exists() && userSnap.data().role === "admin";
+                        setIsAdmin(userIsAdmin);
+                    }
+                    setCheckingAccess(false);
+                });
+
+                return () => unsub();
+            } catch (error) {
+                console.error("Error checking access:", error);
+                setCheckingAccess(false);
+            }
+        };
+
+        checkAccess();
+    }, []);
 
     // Handle URL query param
     useEffect(() => {
@@ -117,6 +154,43 @@ export default function InterviewPage() {
         }
         setOpenIds(newOpenIds);
     };
+
+    // Show loading while checking access
+    if (checkingAccess) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-[#0c111d]">
+                <div className="text-center">
+                    <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-indigo-600"></div>
+                    <p className="mt-4 text-gray-500">Đang kiểm tra quyền truy cập...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show maintenance page if not public and user is not admin
+    if (!isPublic && !isAdmin) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-[#0c111d]">
+                <div className="max-w-md text-center px-6">
+                    <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/20">
+                        <FiLock className="h-12 w-12 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <h1 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
+                        Trang đang bảo trì
+                    </h1>
+                    <p className="mb-8 text-gray-600 dark:text-gray-400">
+                        Trang Interview Q&A hiện đang được cập nhật và tạm thời không khả dụng. Vui lòng quay lại sau!
+                    </p>
+                    <a
+                        href="/"
+                        className="inline-block rounded-lg bg-indigo-600 px-6 py-3 text-white hover:bg-indigo-700 transition-colors"
+                    >
+                        Quay về trang chủ
+                    </a>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20 dark:bg-[#0c111d] transition-colors duration-300">
