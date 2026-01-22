@@ -13,6 +13,7 @@ interface Question {
     answer: string;
     topic: string;
     difficulty: "Easy" | "Medium" | "Hard";
+    source?: string;
 }
 
 export default function InterviewSection() {
@@ -84,8 +85,8 @@ export default function InterviewSection() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             className={`overflow-hidden rounded-xl border transition-all duration-300 ${openId === q.id
-                                    ? "bg-white border-indigo-200 shadow-lg dark:bg-gray-800 dark:border-indigo-500/30"
-                                    : "bg-white/60 border-gray-200 shadow-sm hover:shadow-md dark:bg-gray-900/40 dark:border-gray-800 backdrop-blur-sm"
+                                ? "bg-white border-indigo-200 shadow-lg dark:bg-gray-800 dark:border-indigo-500/30"
+                                : "bg-white/60 border-gray-200 shadow-sm hover:shadow-md dark:bg-gray-900/40 dark:border-gray-800 backdrop-blur-sm"
                                 }`}
                         >
                             <div
@@ -95,10 +96,10 @@ export default function InterviewSection() {
                                 <div className="mb-3 flex items-center gap-2 flex-wrap">
                                     <span
                                         className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-bold uppercase ${q.difficulty === "Easy"
-                                                ? "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300"
-                                                : q.difficulty === "Medium"
-                                                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-300"
-                                                    : "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300"
+                                            ? "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300"
+                                            : q.difficulty === "Medium"
+                                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-300"
+                                                : "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300"
                                             }`}
                                     >
                                         {q.difficulty}
@@ -134,6 +135,24 @@ export default function InterviewSection() {
                                                 className="prose prose-sm max-w-none dark:prose-invert prose-p:text-gray-600 dark:prose-p:text-gray-300"
                                                 dangerouslySetInnerHTML={{ __html: q.answer }}
                                             />
+                                            {q.source && (
+                                                <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                                                        📚 Nguồn: {q.source.startsWith('http') ? (
+                                                            <a
+                                                                href={q.source}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 underline"
+                                                            >
+                                                                {q.source}
+                                                            </a>
+                                                        ) : (
+                                                            <span>{q.source}</span>
+                                                        )}
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     </motion.div>
                                 )}

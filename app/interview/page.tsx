@@ -29,6 +29,7 @@ interface Question {
     answer: string;
     topic: string;
     difficulty: "Easy" | "Medium" | "Hard";
+    source?: string;
 }
 
 export default function InterviewPage() {
@@ -401,6 +402,24 @@ export default function InterviewPage() {
                                     prose-pre:bg-gray-900 dark:prose-pre:bg-black/50 prose-pre:shadow-lg prose-pre:border prose-pre:border-gray-700/50"
                                                                 dangerouslySetInnerHTML={{ __html: q.answer }}
                                                             />
+                                                            {q.source && (
+                                                                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                                                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                                                                        📚 Nguồn: {q.source.startsWith('http') ? (
+                                                                            <a
+                                                                                href={q.source}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 underline"
+                                                                            >
+                                                                                {q.source}
+                                                                            </a>
+                                                                        ) : (
+                                                                            <span>{q.source}</span>
+                                                                        )}
+                                                                    </p>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                         <div className="bg-gray-100/50 px-8 py-3 dark:bg-gray-800/50 flex justify-end">
                                                             <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
