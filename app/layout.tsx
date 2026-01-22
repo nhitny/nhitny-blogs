@@ -10,6 +10,8 @@ import Navbar from "@/components/Layout/Navbar";
 import Footer from "@/components/Layout/Footer";
 import ThemeSync from "@/components/UI/ThemeSync";
 
+import { Toaster } from "react-hot-toast";
+
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
   weight: ["300", "400", "500", "600", "700"],
@@ -25,6 +27,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <ThemeSync />
           </Suspense>
           <AuthProvider>
+            <Toaster position="top-right" />
             <Navbar />
             <div className="flex min-h-screen flex-col">
               {children}

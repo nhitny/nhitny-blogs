@@ -6,6 +6,8 @@ import { FiArrowRight, FiTag, FiClock } from "react-icons/fi";
 import { FaFire } from "react-icons/fa";
 import TopicMarquee from "@/components/Layout/TopicMarquee";
 
+import DailyQuestion from "@/components/Home/DailyQuestion";
+
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
@@ -21,6 +23,9 @@ export default async function Home() {
   return (
     <main className="flex min-h-screen flex-col">
       <Hero />
+
+      {/* Daily Interview Question */}
+      <DailyQuestion />
 
       {/* Featured Posts Section - New */}
       <section className="relative z-10 mx-auto w-full max-w-7xl px-6 py-16 lg:px-8">

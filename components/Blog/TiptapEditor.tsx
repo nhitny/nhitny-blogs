@@ -17,8 +17,34 @@ import { Color } from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
 import Mathematics from "@tiptap/extension-mathematics";
-import { useEffect } from "react";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { common, createLowlight } from "lowlight";
+import { useEffect, useState } from "react";
 import "katex/dist/katex.min.css";
+// Import both light and dark themes for syntax highlighting
+import "highlight.js/styles/github.css"; // Light mode
+import "highlight.js/styles/github-dark.css"; // Dark mode
+
+// Import highlight.js languages
+import python from 'highlight.js/lib/languages/python';
+import javascript from 'highlight.js/lib/languages/javascript';
+import typescript from 'highlight.js/lib/languages/typescript';
+import bash from 'highlight.js/lib/languages/bash';
+import css from 'highlight.js/lib/languages/css';
+import xml from 'highlight.js/lib/languages/xml'; // for HTML
+import json from 'highlight.js/lib/languages/json';
+import java from 'highlight.js/lib/languages/java';
+import cpp from 'highlight.js/lib/languages/cpp';
+import c from 'highlight.js/lib/languages/c';
+import csharp from 'highlight.js/lib/languages/csharp';
+import php from 'highlight.js/lib/languages/php';
+import ruby from 'highlight.js/lib/languages/ruby';
+import go from 'highlight.js/lib/languages/go';
+import rust from 'highlight.js/lib/languages/rust';
+import sql from 'highlight.js/lib/languages/sql';
+import markdown from 'highlight.js/lib/languages/markdown';
+import yaml from 'highlight.js/lib/languages/yaml';
+
 import {
     FiBold,
     FiItalic,
@@ -38,9 +64,32 @@ import {
     AiOutlineTable,
     AiOutlineFunction,
 } from "react-icons/ai";
-import { BsTypeH1, BsTypeH2, BsTypeH3, BsQuote } from "react-icons/bs";
+import { BsTypeH1, BsTypeH2, BsTypeH3, BsQuote, BsCode } from "react-icons/bs";
 import { MdFormatClear, MdHorizontalRule, MdCheckBox } from "react-icons/md";
 import { BiUndo, BiRedo } from "react-icons/bi";
+
+// Create lowlight instance and register languages
+const lowlight = createLowlight(common);
+
+lowlight.register('python', python);
+lowlight.register('javascript', javascript);
+lowlight.register('typescript', typescript);
+lowlight.register('bash', bash);
+lowlight.register('css', css);
+lowlight.register('html', xml);
+lowlight.register('xml', xml);
+lowlight.register('json', json);
+lowlight.register('java', java);
+lowlight.register('cpp', cpp);
+lowlight.register('c', c);
+lowlight.register('csharp', csharp);
+lowlight.register('php', php);
+lowlight.register('ruby', ruby);
+lowlight.register('go', go);
+lowlight.register('rust', rust);
+lowlight.register('sql', sql);
+lowlight.register('markdown', markdown);
+lowlight.register('yaml', yaml);
 
 interface TiptapEditorProps {
     value: string;
@@ -53,11 +102,21 @@ export default function TiptapEditor({
     onChange,
     placeholder = "Bắt đầu viết bài của bạn...",
 }: TiptapEditorProps) {
+    const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+
     const editor = useEditor({
+        immediatelyRender: false,
         extensions: [
             StarterKit.configure({
                 heading: {
                     levels: [1, 2, 3, 4, 5, 6],
+                },
+                codeBlock: false, // Disable default code block
+            }),
+            CodeBlockLowlight.configure({
+                lowlight,
+                HTMLAttributes: {
+                    class: "hljs rounded-lg p-4 my-4 overflow-x-auto bg-gray-900 text-gray-100",
                 },
             }),
             Underline,
@@ -142,6 +201,23 @@ export default function TiptapEditor({
             editor.commands.setContent(value);
         }
     }, [value, editor]);
+
+    // Close language selector when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (showLanguageSelector) {
+                const target = event.target as HTMLElement;
+                if (!target.closest('.relative')) {
+                    setShowLanguageSelector(false);
+                }
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showLanguageSelector]);
 
     if (!editor) {
         return <div className="text-gray-400 p-4">Đang tải editor...</div>;
@@ -402,13 +478,71 @@ export default function TiptapEditor({
                     >
                         <MdHorizontalRule className="h-5 w-5" />
                     </ToolbarButton>
-                    <ToolbarButton
-                        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-                        active={editor.isActive("codeBlock")}
-                        title="Khối mã code"
-                    >
-                        <FiCode className="h-6 w-6" />
-                    </ToolbarButton>
+                    {/* Code Block with Language Selector */}
+                    <div className="relative">
+                        <ToolbarButton
+                            onClick={() => setShowLanguageSelector(!showLanguageSelector)}
+                            active={editor.isActive("codeBlock")}
+                            title="Khối mã code (chọn ngôn ngữ)"
+                        >
+                            <BsCode className="h-5 w-5" />
+                        </ToolbarButton>
+                        {showLanguageSelector && (
+                            <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl z-[1000] min-w-[180px] max-h-[300px] overflow-y-auto">
+                                <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+                                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                        Chọn ngôn ngữ:
+                                    </p>
+                                </div>
+                                {[
+                                    { label: "Plain Text", value: null },
+                                    { label: "Python", value: "python" },
+                                    { label: "JavaScript", value: "javascript" },
+                                    { label: "TypeScript", value: "typescript" },
+                                    { label: "Bash/Shell", value: "bash" },
+                                    { label: "HTML", value: "html" },
+                                    { label: "CSS", value: "css" },
+                                    { label: "JSON", value: "json" },
+                                    { label: "Java", value: "java" },
+                                    { label: "C++", value: "cpp" },
+                                    { label: "C", value: "c" },
+                                    { label: "C#", value: "csharp" },
+                                    { label: "PHP", value: "php" },
+                                    { label: "Ruby", value: "ruby" },
+                                    { label: "Go", value: "go" },
+                                    { label: "Rust", value: "rust" },
+                                    { label: "SQL", value: "sql" },
+                                    { label: "Markdown", value: "markdown" },
+                                    { label: "YAML", value: "yaml" },
+                                    { label: "XML", value: "xml" },
+                                ].map((lang) => (
+                                    <button
+                                        key={lang.value || "plain"}
+                                        type="button"
+                                        onClick={() => {
+                                            if (lang.value) {
+                                                editor
+                                                    .chain()
+                                                    .focus()
+                                                    .toggleCodeBlock({ language: lang.value })
+                                                    .run();
+                                            } else {
+                                                editor
+                                                    .chain()
+                                                    .focus()
+                                                    .toggleCodeBlock()
+                                                    .run();
+                                            }
+                                            setShowLanguageSelector(false);
+                                        }}
+                                        className="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
+                                    >
+                                        {lang.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <ToolbarButton onClick={addMath} title="Chèn công thức toán (LaTeX)">
                         <AiOutlineFunction className="h-5 w-5" />
                     </ToolbarButton>
@@ -438,7 +572,7 @@ export default function TiptapEditor({
                 </span>
             </div>
 
-            {/* CSS for auto-numbering images */}
+            {/* CSS for auto-numbering images and code highlighting */}
             <style jsx global>{`
         .ProseMirror {
           counter-reset: figure-counter;
@@ -455,6 +589,116 @@ export default function TiptapEditor({
           font-size: 0.875rem;
           color: #6b7280;
           margin-top: 0.5rem;
+        }
+
+        /* Code block styling - Light Mode */
+        .ProseMirror pre {
+          background: #f6f8fa !important;
+          color: #24292f !important;
+          font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', Courier, monospace;
+          padding: 1rem !important;
+          border-radius: 0.5rem !important;
+          overflow-x: auto !important;
+          margin: 1rem 0 !important;
+          border: 1px solid #d0d7de !important;
+        }
+
+        .ProseMirror pre code {
+          background: transparent !important;
+          color: inherit !important;
+          padding: 0 !important;
+          font-size: 0.875rem !important;
+          line-height: 1.6 !important;
+        }
+
+        /* Code block styling - Dark Mode */
+        .dark .ProseMirror pre {
+          background: #161b22 !important;
+          color: #c9d1d9 !important;
+          border: 1px solid #30363d !important;
+        }
+
+        /* Ensure highlight.js classes work */
+        .ProseMirror .hljs {
+          display: block;
+          overflow-x: auto;
+          padding: 0;
+          background: transparent !important;
+        }
+
+        /* Override highlight.js colors for better Gemini-like appearance */
+        /* Light mode syntax colors */
+        .ProseMirror .hljs-keyword,
+        .ProseMirror .hljs-selector-tag,
+        .ProseMirror .hljs-literal,
+        .ProseMirror .hljs-section,
+        .ProseMirror .hljs-link {
+          color: #a626a4 !important; /* Purple for keywords */
+        }
+
+        .ProseMirror .hljs-string,
+        .ProseMirror .hljs-attr {
+          color: #50a14f !important; /* Green for strings */
+        }
+
+        .ProseMirror .hljs-number,
+        .ProseMirror .hljs-regexp {
+          color: #986801 !important; /* Orange for numbers */
+        }
+
+        .ProseMirror .hljs-built_in,
+        .ProseMirror .hljs-builtin-name {
+          color: #4078f2 !important; /* Blue for built-ins */
+        }
+
+        .ProseMirror .hljs-comment {
+          color: #6a737d !important; /* Gray for comments */
+          font-style: italic;
+        }
+
+        /* Dark mode syntax colors */
+        .dark .ProseMirror .hljs-keyword,
+        .dark .ProseMirror .hljs-selector-tag,
+        .dark .ProseMirror .hljs-literal,
+        .dark .ProseMirror .hljs-section,
+        .dark .ProseMirror .hljs-link {
+          color: #c678dd !important; /* Purple for keywords */
+        }
+
+        .dark .ProseMirror .hljs-string,
+        .dark .ProseMirror .hljs-attr {
+          color: #98c379 !important; /* Green for strings */
+        }
+
+        .dark .ProseMirror .hljs-number,
+        .dark .ProseMirror .hljs-regexp {
+          color: #d19a66 !important; /* Orange for numbers */
+        }
+
+        .dark .ProseMirror .hljs-built_in,
+        .dark .ProseMirror .hljs-builtin-name {
+          color: #61afef !important; /* Blue for built-ins */
+        }
+
+        .dark .ProseMirror .hljs-comment {
+          color: #7d8590 !important; /* Gray for comments */
+          font-style: italic;
+        }
+
+        /* Language indicator */
+        .ProseMirror pre[data-language]::before {
+          content: attr(data-language);
+          display: block;
+          text-align: right;
+          font-size: 0.75rem;
+          color: #6a737d;
+          margin-bottom: 0.5rem;
+          text-transform: uppercase;
+          font-weight: 600;
+        }
+
+        .dark .ProseMirror pre[data-language]::before {
+          color: #8b949e;
         }
       `}</style>
         </div>

@@ -8,6 +8,10 @@ import LikeBtn from "@/components/Blog/LikeBtn";
 import Comments from "@/components/Blog/Comments";
 import Toc, { HeadingItem } from "@/components/Blog/Toc";
 
+// Import highlight.js for syntax highlighting
+import "highlight.js/styles/github.css"; // Light mode
+import "highlight.js/styles/github-dark.css"; // Dark mode
+
 // Tạo slug từ text (dùng cho id heading)
 function slugify(text: string) {
   return text
@@ -223,6 +227,27 @@ export default function BlogSlugPage({
     });
   }, [contentHtml]);
 
+  // Apply syntax highlighting to code blocks
+  useEffect(() => {
+    if (!contentHtml) return;
+
+    // Dynamically import highlight.js
+    import('highlight.js').then((hljs) => {
+      const article = document.querySelector('article.prose');
+      if (!article) return;
+
+      // Find all code blocks
+      const codeBlocks = article.querySelectorAll('pre code');
+      codeBlocks.forEach((block) => {
+        // Skip if already highlighted
+        if (block.classList.contains('hljs')) return;
+
+        // Apply highlighting
+        hljs.default.highlightElement(block as HTMLElement);
+      });
+    });
+  }, [contentHtml]);
+
   // Center image captions
   useEffect(() => {
     if (!contentHtml) return;
@@ -347,8 +372,7 @@ export default function BlogSlugPage({
           {/* Description */}
           {post.description && (
             <p
-              className="mb-6 text-lg italic border-l-4 border-indigo-600 pl-4 font-semibold"
-              style={{ color: '#111827' }}
+              className="mb-6 text-lg italic border-l-4 border-indigo-600 pl-4 font-semibold text-gray-900 dark:text-gray-100"
             >
               {post.description}
             </p>
@@ -428,6 +452,17 @@ export default function BlogSlugPage({
               prose-li:text-black dark:prose-li:text-white"
             dangerouslySetInnerHTML={{ __html: contentHtml || post.content }}
           />
+
+          {/* Disclaimer Footer */}
+          <div className="mt-12 border-t border-gray-200 pt-8 dark:border-gray-700">
+            <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
+              <p className="text-center text-sm italic text-gray-600 dark:text-gray-400">
+                "Đây là bài viết được tổng hợp từ quá trình tìm hiểu của tác giả, có thể còn nhiều thiếu sót.
+                <br />
+                Rất mong nhận được sự góp ý từ mọi người để nội dung ngày càng hoàn thiện hơn! ❤️"
+              </p>
+            </div>
+          </div>
 
           {/* Like */}
           <div className="mt-8">

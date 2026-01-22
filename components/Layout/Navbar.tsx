@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
-import { FiSearch, FiMenu, FiX, FiUser, FiLogOut, FiSun, FiMoon, FiHome, FiBookOpen, FiInfo, FiTrendingUp } from "react-icons/fi";
+import { FiSearch, FiMenu, FiX, FiUser, FiLogOut, FiSun, FiMoon, FiHome, FiBookOpen, FiInfo, FiTrendingUp, FiHelpCircle } from "react-icons/fi";
 import UserAvatar from "@/components/Layout/UserAvatar";
 
 export default function Navbar() {
@@ -38,6 +38,7 @@ export default function Navbar() {
   const navLinks = [
     { href: "/", label: "Trang chủ", icon: <FiHome className="h-5 w-5" /> },
     { href: "/blogs", label: "Bài viết", icon: <FiBookOpen className="h-5 w-5" /> },
+    { href: "/interview", label: "Phỏng vấn", icon: <FiHelpCircle className="h-5 w-5" /> },
     { href: "/about", label: "Giới thiệu", icon: <FiInfo className="h-5 w-5" /> },
   ];
 

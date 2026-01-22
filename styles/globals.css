@@ -511,3 +511,127 @@ a {
     padding-right: 0.75rem !important;
   }
 }
+
+/* ===========================
+   🎨 SYNTAX HIGHLIGHTING 🎨
+   =========================== */
+
+/* Code block styling - Light Mode */
+.prose pre {
+  background: #f6f8fa !important;
+  color: #24292f !important;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', Courier, monospace !important;
+  padding: 1rem !important;
+  border-radius: 0.5rem !important;
+  overflow-x: auto !important;
+  margin: 1rem 0 !important;
+  border: 1px solid #d0d7de !important;
+}
+
+.prose pre code {
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Code block styling - Dark Mode */
+.dark .prose pre {
+  background: #161b22 !important;
+  color: #c9d1d9 !important;
+  border: 1px solid #30363d !important;
+}
+
+/* Ensure highlight.js classes work */
+.prose .hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0;
+  background: transparent !important;
+}
+
+/* Override highlight.js colors for better Gemini-like appearance */
+/* Light mode syntax colors */
+.prose .hljs-keyword,
+.prose .hljs-selector-tag,
+.prose .hljs-literal,
+.prose .hljs-section,
+.prose .hljs-link {
+  color: #a626a4 !important;
+  /* Purple for keywords */
+}
+
+.prose .hljs-string,
+.prose .hljs-attr {
+  color: #50a14f !important;
+  /* Green for strings */
+}
+
+.prose .hljs-number,
+.prose .hljs-regexp {
+  color: #986801 !important;
+  /* Orange for numbers */
+}
+
+.prose .hljs-built_in,
+.prose .hljs-builtin-name {
+  color: #4078f2 !important;
+  /* Blue for built-ins */
+}
+
+.prose .hljs-comment {
+  color: #6a737d !important;
+  /* Gray for comments */
+  font-style: italic;
+}
+
+/* Dark mode syntax colors */
+.dark .prose .hljs-keyword,
+.dark .prose .hljs-selector-tag,
+.dark .prose .hljs-literal,
+.dark .prose .hljs-section,
+.dark .prose .hljs-link {
+  color: #c678dd !important;
+  /* Purple for keywords */
+}
+
+.dark .prose .hljs-string,
+.dark .prose .hljs-attr {
+  color: #98c379 !important;
+  /* Green for strings */
+}
+
+.dark .prose .hljs-number,
+.dark .prose .hljs-regexp {
+  color: #d19a66 !important;
+  /* Orange for numbers */
+}
+
+.dark .prose .hljs-built_in,
+.dark .prose .hljs-builtin-name {
+  color: #61afef !important;
+  /* Blue for built-ins */
+}
+
+.dark .prose .hljs-comment {
+  color: #7d8590 !important;
+  /* Gray for comments */
+  font-style: italic;
+}
+
+/* Language indicator */
+.prose pre[data-language]::before {
+  content: attr(data-language);
+  display: block;
+  text-align: right;
+  font-size: 0.75rem;
+  color: #6a737d;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.dark .prose pre[data-language]::before {
+  color: #8b949e;
+}
