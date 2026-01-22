@@ -35,14 +35,6 @@ export const metadata: Metadata = {
     siteName: "Nhitny Blog",
     title: "Nhitny Blog - AI, Deep Learning & Engineering",
     description: "Chia sẻ kiến thức thực chiến về AI, LLM và Engineering.",
-    images: [
-      {
-        url: "/og-image.png", // Bạn nên tạo ảnh này sau
-        width: 1200,
-        height: 630,
-        alt: "Nhitny Blog",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
