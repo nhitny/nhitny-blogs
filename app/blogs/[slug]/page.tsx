@@ -10,6 +10,10 @@ import Toc, { HeadingItem } from "@/components/Blog/Toc";
 import Image from "next/image";
 import Script from "next/script";
 import katex from "katex";
+import Link from "next/link";
+import { FiArrowLeft, FiClock, FiEye, FiHeart, FiMessageCircle } from "react-icons/fi";
+import { SoftBackground } from "@/components/Soft/Soft";
+import ReadingProgress from "@/components/Blog/ReadingProgress";
 
 // Import highlight.js for syntax highlighting
 import "highlight.js/styles/github-dark.css"; // Dark mode
@@ -67,6 +71,7 @@ export default function BlogSlugPage({
   const [post, setPost] = useState<any>(null);
   const [contentHtml, setContentHtml] = useState<string>("");
   const [headings, setHeadings] = useState<HeadingItem[]>([]);
+  const [status, setStatus] = useState<"loading" | "ready" | "missing">("loading");
 
   useEffect(() => {
     if (!slug) return;
@@ -89,6 +94,7 @@ export default function BlogSlugPage({
           if (isPublished || isScheduledPassed) {
             // Include Firestore ID in the post state
             setPost({ ...data, id: snap.docs[0].id });
+            setStatus("ready");
 
             // Inject id cho h2/h3 để TOC
             const { html, headings } = addHeadingIds(data.content || "");
@@ -109,9 +115,11 @@ export default function BlogSlugPage({
           }
         }
         setPost(null); // Not found or not published/scheduled yet
+        setStatus("missing");
       } catch (err) {
         console.error("Error fetching post:", err);
         setPost(null);
+        setStatus("missing");
       }
     })();
   }, [slug]);
@@ -369,11 +377,39 @@ export default function BlogSlugPage({
     return () => clearTimeout(t);
   }, [contentHtml]);
 
-  if (!post) return <p className="p-6">Đang tải bài viết...</p>;
-
-  if (!post) return <p className="p-6">Đang tải bài viết...</p>;
+  if (!post) {
+    return (
+      <main className="st-home st-page min-h-[70vh]">
+        <SoftBackground />
+        <div className="st-wrap pt-32 pb-24">
+          {status === "missing" ? (
+            <div className="st-card mx-auto max-w-xl p-10 text-center">
+              <p className="font-mono text-xs text-st-muted">404 · không tìm thấy</p>
+              <h1 className="st-h2 mt-2">
+                Bài viết này <em>chưa có</em>
+              </h1>
+              <p className="st-body">Có thể bài đã bị gỡ hoặc chưa được xuất bản.</p>
+              <Link href="/blogs" className="st-btn primary mt-4">
+                <FiArrowLeft /> Về danh sách bài viết
+              </Link>
+            </div>
+          ) : (
+            <div className="mx-auto max-w-3xl animate-pulse space-y-4">
+              <div className="h-4 w-40 rounded-full bg-st-line" />
+              <div className="h-12 w-full rounded-2xl bg-st-line" />
+              <div className="h-12 w-2/3 rounded-2xl bg-st-line" />
+              <div className="h-4 w-1/2 rounded-full bg-st-line" />
+              <div className="mt-8 h-64 w-full rounded-3xl bg-st-line" />
+            </div>
+          )}
+        </div>
+      </main>
+    );
+  }
 
   // JSON-LD Structured Data
+  const fmtDate = (d: any) => (d?.toDate?.() ? d.toDate().toLocaleDateString("vi-VN") : d ? String(d) : "");
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -391,7 +427,9 @@ export default function BlogSlugPage({
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-6 pt-8 pb-24">
+    <main className="st-home st-page">
+      <ReadingProgress />
+      <SoftBackground />
       {/* KaTeX CDN */}
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
       <Script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" strategy="lazyOnload" />
@@ -418,175 +456,98 @@ export default function BlogSlugPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {/* Lưới 2 cột: TOC trái + nội dung phải */}
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
-        {/* TOC trái */}
-        <aside className="lg:col-span-4">
-          <div className="sticky top-24">
-            <Toc headings={headings} />
-          </div>
-        </aside>
 
-        {/* Nội dung phải */}
-        <div className="lg:col-span-8">
-          {/* Ảnh header */}
-          {post.headerImage && (
-            <div className="relative mb-6 h-72 w-full overflow-hidden rounded-lg">
-              <Image
-                src={post.headerImage}
-                alt={post.title}
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          )}
+      <div className="st-wrap pt-24 pb-24 md:pt-28">
+        <Link href="/blogs" className="st-link mb-8">
+          <FiArrowLeft /> Tất cả bài viết
+        </Link>
 
-          {/* Tags ở đầu */}
+        {/* ---------- header ---------- */}
+        <header className="mx-auto max-w-4xl lg:mx-0">
           {tags.length > 0 && (
-            <div className="mb-4 flex flex-wrap gap-2">
+            <div className="mb-5 flex flex-wrap gap-2">
               {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-block rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                >
+                <Link key={tag} href={`/search?q=${encodeURIComponent(tag)}`} className="st-hash">
                   #{tag}
-                </span>
+                </Link>
               ))}
             </div>
           )}
 
-          {/* Stats bar: Reading time, Views, Likes, Comments */}
-          <div className="mb-4 flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-            <div className="flex items-center gap-1">
-              <span>🕐</span>
-              <span>{readingTime} phút đọc</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span>👁️</span>
-              <span>{post.views || 0} lượt xem</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span>❤️</span>
-              <span>{post.likes || 0} thích</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span>💬</span>
-              <span>{post.commentsCount || 0} bình luận</span>
-            </div>
+          <h1 className="st-article-title">{post.title}</h1>
+
+          {post.description && <p className="st-article-lead mt-6">{post.description}</p>}
+
+          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 font-mono text-xs text-st-muted">
+            <span className="flex items-center gap-2.5">
+              <span className="relative h-9 w-9 overflow-hidden rounded-full bg-gradient-to-br from-lavender-200 to-rose-200 dark:from-lavender-900 dark:to-rose-900">
+                <Image src="/chibi.webp" alt="" fill sizes="36px" className="object-cover object-top" />
+              </span>
+              <span className="font-sans text-sm font-semibold text-st-ink">{post.student || "Nhitny"}</span>
+            </span>
+            {post.date && <span>xuất bản {fmtDate(post.date)}</span>}
+            {post.updatedAt && <span>cập nhật {fmtDate(post.updatedAt)}</span>}
+            <span className="flex items-center gap-1.5"><FiClock /> {readingTime} phút đọc</span>
+            <span className="flex items-center gap-1.5"><FiEye /> {post.views || 0}</span>
+            <span className="flex items-center gap-1.5"><FiHeart /> {post.likes || 0}</span>
+            <span className="flex items-center gap-1.5"><FiMessageCircle /> {post.commentsCount || 0}</span>
           </div>
+        </header>
 
-          {/* Tiêu đề */}
-          <h1 className="mb-4 text-3xl font-extrabold text-gray-900 sm:text-4xl dark:text-gray-100">
-            {post.title}
-          </h1>
-
-          {/* Description */}
-          {post.description && (
-            <p
-              className="mb-6 text-lg italic border-l-4 border-indigo-600 pl-4 font-semibold text-gray-900 dark:text-gray-100"
-            >
-              {post.description}
-            </p>
-          )}
-
-          {/* Author info và dates */}
-          <div className="mb-6 flex flex-wrap items-center gap-4 text-sm">
-            {post.student && (
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-900 dark:text-gray-100">{post.student}</span>
-                {post.author && (
-                  <span className="text-gray-600 dark:text-gray-400">• Tác giả chính</span>
-                )}
-              </div>
-            )}
-            <div className="flex flex-wrap items-center gap-2 text-gray-600 dark:text-gray-400">
-              {post.date && (
-                <span>
-                  Xuất bản: {post.date?.toDate?.() ? post.date.toDate().toLocaleDateString('vi-VN') : String(post.date)}
-                </span>
-              )}
-              {post.updatedAt && (
-                <>
-                  <span>•</span>
-                  <span>
-                    Cập nhật: {post.updatedAt?.toDate?.() ? post.updatedAt.toDate().toLocaleDateString('vi-VN') : String(post.updatedAt)}
-                  </span>
-                </>
-              )}
-            </div>
+        {post.headerImage && (
+          <div className="relative mt-10 h-64 w-full overflow-hidden rounded-[28px] border border-st-line shadow-st md:h-96">
+            <Image src={post.headerImage} alt={post.title} fill className="object-cover" priority />
           </div>
+        )}
 
-          {/* Metadata Section (Nhóm, Học viên, Lớp, Ngày) */}
-          {(post.group || post.student || post.class || post.assignmentDate) && (
-            <div className="mb-8 border-l-4 border-gray-300 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800">
-              <h2 className="mb-3 text-xl font-bold text-gray-900 dark:text-gray-100">
-                {post.title}
-              </h2>
-              <div className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
-                {post.group && (
-                  <p>
-                    <span className="font-bold">Nhóm:</span> {post.group}
-                  </p>
-                )}
-                {post.student && (
-                  <p>
-                    <span className="font-bold">Học viên:</span> {post.student}
-                  </p>
-                )}
-                {post.class && (
-                  <p>
-                    <span className="font-bold">Lớp:</span> {post.class}
-                  </p>
-                )}
-                {post.assignmentDate && (
-                  <p>
-                    <span className="font-bold">Ngày:</span>{" "}
-                    {post.assignmentDate?.toDate?.()
-                      ? post.assignmentDate.toDate().toLocaleDateString('vi-VN')
-                      : post.assignmentDate}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Dấu chấm giống "..." */}
-          <div className="mb-6 text-center text-3xl text-gray-400 dark:text-gray-600">• • •</div>
-
-          {/* Nội dung bài viết */}
-          <article
-            className="prose max-w-none lg:prose-lg dark:prose-invert
-              text-black dark:text-white
-              prose-p:text-black dark:prose-p:text-white
-              prose-headings:text-black dark:prose-headings:text-white
-              prose-strong:text-black dark:prose-strong:text-white
-              prose-li:text-black dark:prose-li:text-white"
-            dangerouslySetInnerHTML={{ __html: contentHtml || post.content }}
-          />
-
-          {/* Disclaimer Footer */}
-          <div className="mt-12 border-t border-gray-200 pt-8 dark:border-gray-700">
-            <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
-              <p className="text-center text-sm italic text-gray-600 dark:text-gray-400">
-                &ldquo;Đây là bài viết được tổng hợp từ quá trình tìm hiểu của tác giả, có thể còn nhiều thiếu sót.
-                <br />
-                Rất mong nhận được sự góp ý từ mọi người để nội dung ngày càng hoàn thiện hơn! ❤️&rdquo;
-              </p>
-            </div>
+        {/* assignment metadata (group / student / class / date) */}
+        {(post.group || post.student || post.class || post.assignmentDate) && (
+          <div className="st-card mt-10 grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ["nhóm", post.group],
+              ["học viên", post.student],
+              ["lớp", post.class],
+              ["ngày", fmtDate(post.assignmentDate)],
+            ]
+              .filter(([, v]) => v)
+              .map(([k, v]) => (
+                <div key={k as string}>
+                  <p className="font-mono text-[0.68rem] uppercase tracking-widest text-st-muted">{k}</p>
+                  <p className="mt-1 font-serif text-lg text-st-ink">{v as string}</p>
+                </div>
+              ))}
           </div>
+        )}
 
-          {/* Like */}
-          <div className="mt-8">
-            <LikeBtn postId={post.id} />
-          </div>
+        {/* ---------- body: TOC + article ---------- */}
+        <div className="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-12">
+          <aside className="hidden lg:col-span-3 lg:block">
+            <div className="sticky top-24">
+              <Toc headings={headings} />
+            </div>
+          </aside>
 
-          {/* Comments */}
-          <div className="mt-8">
-            <Comments postId={post.id} />
+          <div className="min-w-0 lg:col-span-9">
+            <article
+              className="st-article prose max-w-3xl lg:prose-lg dark:prose-invert"
+              dangerouslySetInnerHTML={{ __html: contentHtml || post.content }}
+            />
+
+            <div className="st-note mt-14 max-w-3xl">
+              &ldquo;Bài viết được tổng hợp từ quá trình tự tìm hiểu nên có thể còn thiếu sót — rất mong nhận được
+              góp ý để nội dung ngày càng hoàn thiện hơn.&rdquo; ♡
+            </div>
+
+            <div className="mt-8 max-w-3xl">
+              <LikeBtn postId={post.id} />
+            </div>
+
+            <div className="mt-8 max-w-3xl">
+              <Comments postId={post.id} />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

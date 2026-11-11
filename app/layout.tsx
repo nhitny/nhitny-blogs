@@ -1,6 +1,7 @@
 import "@/styles/globals.css";
+import "@/styles/soft.css";
 import "katex/dist/katex.min.css";
-import { Be_Vietnam_Pro } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
@@ -13,10 +14,26 @@ import ThemeSync from "@/components/UI/ThemeSync";
 
 import { Toaster } from "react-hot-toast";
 
-const beVietnamPro = Be_Vietnam_Pro({
+const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin", "vietnamese"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
+  variable: "--font-sans",
+});
+
+const fontSerif = Fraunces({
+  subsets: ["latin", "vietnamese"],
+  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-serif",
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
@@ -47,8 +64,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={beVietnamPro.className} suppressHydrationWarning>
+    <html lang="vi" suppressHydrationWarning className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable}`}>
+      <body className="font-sans" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <Suspense fallback={null}>
             <ThemeSync />

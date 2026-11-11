@@ -52,21 +52,28 @@ export default function LikeBtn({ postId }: { postId: string }) {
   };
 
   return (
-    <div className="flex items-center justify-center pt-16 pb-6">
-      {loading ? (
-        <AiOutlineLoading className="animate-spin" style={{ fontSize: "1.5rem" }} />
-      ) : (
-        <>
-          <button onClick={toggleLike} disabled={loading}>
-            {hasUserLiked ? (
-              <AiFillHeart style={{ fontSize: "2rem", color: "rgba(220, 38, 38)" }} />
-            ) : (
-              <AiOutlineHeart style={{ fontSize: "2rem" }} />
-            )}
-          </button>
-          <span style={{ fontSize: "1rem", paddingLeft: "16px" }}>{totalLikes}</span>
-        </>
-      )}
+    <div className="flex items-center justify-center gap-4 py-6">
+      <button
+        onClick={toggleLike}
+        disabled={loading}
+        aria-pressed={hasUserLiked}
+        aria-label={hasUserLiked ? "Bỏ thích" : "Thích bài viết"}
+        className={`group inline-flex items-center gap-3 rounded-full border px-6 py-3 font-medium transition-all ${
+          hasUserLiked
+            ? "border-transparent bg-gradient-to-r from-lavender-400 to-rose-400 text-white shadow-st-hover"
+            : "border-st-line bg-st-surface text-st-ink hover:-translate-y-0.5 hover:border-rose-400"
+        }`}
+      >
+        {loading ? (
+          <AiOutlineLoading className="h-5 w-5 animate-spin" />
+        ) : hasUserLiked ? (
+          <AiFillHeart className="h-5 w-5" />
+        ) : (
+          <AiOutlineHeart className="h-5 w-5 text-rose-500 transition-transform group-hover:scale-110" />
+        )}
+        <span>{hasUserLiked ? "Đã thích" : "Thích bài này"}</span>
+        <span className="font-mono text-sm opacity-80">{totalLikes}</span>
+      </button>
     </div>
   );
 }

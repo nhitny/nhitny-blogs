@@ -125,9 +125,9 @@ export default function Comments({ postId }: CommentsProps) {
   };
 
   return (
-    <div className="mt-12 border-t border-gray-200 pt-8 dark:border-gray-700">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Bình luận ({comments.length})
+    <div className="mt-4 border-t border-st-line pt-10">
+      <h2 className="st-h2 !text-3xl">
+        Bình luận <em>({comments.length})</em>
       </h2>
 
       {/* Comment Form */}
@@ -145,13 +145,13 @@ export default function Comments({ postId }: CommentsProps) {
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Viết bình luận..."
                 rows={3}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+                className="st-input"
               />
               <div className="mt-2 flex justify-end">
                 <button
                   type="submit"
                   disabled={!newComment.trim() || submitting}
-                  className="flex items-center space-x-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="st-btn primary sm disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {submitting ? (
                     <>
@@ -170,12 +170,12 @@ export default function Comments({ postId }: CommentsProps) {
           </div>
         </form>
       ) : (
-        <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
-          <p className="text-gray-600 dark:text-gray-400">
+        <div className="st-card mt-6 p-6 text-center">
+          <p className="text-st-muted">
             Bạn cần{" "}
             <Link
               href="/login"
-              className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+              className="st-link"
             >
               đăng nhập
             </Link>{" "}
@@ -189,14 +189,14 @@ export default function Comments({ postId }: CommentsProps) {
         {loading ? (
           <FunTechLoader />
         ) : comments.length === 0 ? (
-          <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+          <p className="py-8 text-center font-serif italic text-st-muted">
             Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
           </p>
         ) : (
           comments.map((comment) => (
             <div
               key={comment.id}
-              className="flex gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+              className="st-card flex gap-3 p-5"
             >
               <UserAvatar
                 src={comment.userPhoto}
@@ -206,10 +206,10 @@ export default function Comments({ postId }: CommentsProps) {
               <div className="flex-1">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <p className="font-semibold text-st-ink">
                       {comment.userName}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="font-mono text-xs text-st-muted">
                       {formatDate(comment.createdAt)}
                     </p>
                   </div>
@@ -223,7 +223,7 @@ export default function Comments({ postId }: CommentsProps) {
                     </button>
                   )}
                 </div>
-                <p className="mt-2 text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                <p className="mt-2 whitespace-pre-wrap leading-relaxed text-st-ink">
                   {comment.content}
                 </p>
               </div>

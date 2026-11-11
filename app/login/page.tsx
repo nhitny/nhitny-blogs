@@ -3,105 +3,78 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
+import { FiArrowLeft } from "react-icons/fi";
+import { SoftBackground } from "@/components/Soft/Soft";
 
 export default function LoginPage() {
-    const { user, signInWithGoogle, loading } = useAuth();
-    const router = useRouter();
-    const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const { user, signInWithGoogle, loading } = useAuth();
+  const router = useRouter();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-    useEffect(() => {
-        // If already logged in, redirect
-        if (user) {
-            router.push("/blogs");
-        }
-    }, [user, router]);
+  useEffect(() => {
+    if (user) router.push("/blogs");
+  }, [user, router]);
 
-    const handleGoogleSignIn = async () => {
-        setIsLoggingIn(true);
-        try {
-            await signInWithGoogle();
-            // Redirect is handled in AuthContext
-        } catch (error: any) {
-            console.error("Login error:", error);
-            // Show more detailed error for debugging
-            alert(`Đăng nhập thất bại: ${error.message}`);
-        } finally {
-            setIsLoggingIn(false);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center">
-                <div className="text-center">
-                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
-                    <p className="mt-4 text-gray-600 dark:text-gray-400">Đang tải...</p>
-                </div>
-            </div>
-        );
+  const handleGoogleSignIn = async () => {
+    setIsLoggingIn(true);
+    try {
+      await signInWithGoogle(); // redirect is handled in AuthContext
+    } catch (error: any) {
+      console.error("Login error:", error);
+      alert(`Đăng nhập thất bại: ${error.message}`);
+    } finally {
+      setIsLoggingIn(false);
     }
+  };
 
-    return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-gray-900">
-            <div className="w-full max-w-md">
-                <div className="rounded-2xl bg-white p-8 shadow-xl dark:bg-gray-800">
-                    {/* Logo/Title */}
-                    <div className="text-center">
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                            Nhitny Blog
-                        </h1>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">
-                            Đăng nhập để tiếp tục
-                        </p>
-                    </div>
+  return (
+    <main className="st-home st-page flex min-h-[85vh] items-center">
+      <SoftBackground />
+      <div className="st-wrap py-24">
+        <div className="st-card relative mx-auto max-w-md overflow-hidden p-8 text-center sm:p-10">
+          <div className="st-mini-avatar mx-auto mb-6 !h-24 !w-24">
+            <Image src="/chibi.webp" alt="" width={124} height={192} />
+          </div>
+          <p className="font-mono text-xs text-st-muted">~/login</p>
+          <h1 className="st-h2 mt-1">
+            Chào bạn <em>quay lại</em>
+          </h1>
+          <p className="st-body !text-base">Đăng nhập để thích bài viết và để lại bình luận.</p>
 
-                    {/* Google Sign In Button */}
-                    <div className="mt-8">
-                        <button
-                            onClick={handleGoogleSignIn}
-                            disabled={isLoggingIn}
-                            className="flex w-full items-center justify-center space-x-3 rounded-lg border-2 border-gray-300 bg-white px-6 py-3 font-medium text-gray-700 transition-all hover:bg-gray-50 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                        >
-                            {isLoggingIn ? (
-                                <>
-                                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-600 border-t-transparent dark:border-gray-300"></div>
-                                    <span>Đang đăng nhập...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <FcGoogle className="h-6 w-6" />
-                                    <span>Đăng nhập với Google</span>
-                                </>
-                            )}
-                        </button>
-                    </div>
+          {loading ? (
+            <div className="mx-auto mt-8 h-12 w-full animate-pulse rounded-full bg-st-line" />
+          ) : (
+            <button
+              onClick={handleGoogleSignIn}
+              disabled={isLoggingIn}
+              className="st-btn ghost mt-8 w-full justify-center !py-3.5 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isLoggingIn ? (
+                <>
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-st-muted border-t-transparent" />
+                  Đang đăng nhập…
+                </>
+              ) : (
+                <>
+                  <FcGoogle className="h-5 w-5" />
+                  Tiếp tục với Google
+                </>
+              )}
+            </button>
+          )}
 
-                    {/* Info */}
-                    <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                        <p>Bằng cách đăng nhập, bạn đồng ý với</p>
-                        <p className="mt-1">
-                            <a href="#" className="text-indigo-600 hover:underline dark:text-indigo-400">
-                                Điều khoản sử dụng
-                            </a>
-                            {" và "}
-                            <a href="#" className="text-indigo-600 hover:underline dark:text-indigo-400">
-                                Chính sách bảo mật
-                            </a>
-                        </p>
-                    </div>
-                </div>
-
-                {/* Back to home */}
-                <div className="mt-4 text-center">
-                    <button
-                        onClick={() => router.push("/")}
-                        className="text-sm text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-                    >
-                        ← Quay lại trang chủ
-                    </button>
-                </div>
-            </div>
+          <p className="mt-6 text-xs text-st-muted">Mình chỉ dùng tên và ảnh đại diện Google để hiển thị cạnh bình luận của bạn.</p>
         </div>
-    );
+
+        <div className="mt-6 text-center">
+          <Link href="/" className="st-link text-sm">
+            <FiArrowLeft /> Về trang chủ
+          </Link>
+        </div>
+      </div>
+    </main>
+  );
 }

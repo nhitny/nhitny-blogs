@@ -1,7 +1,9 @@
-import BlogHeader from "@/components/Blog/BlogHeader";
+import Link from "next/link";
+import { FiSearch } from "react-icons/fi";
 import BlogsList from "@/components/Blog/BlogsList";
 import InterviewSection from "@/components/Blog/InterviewSection";
-import { getAllBlogPosts, getAllTopics } from "@/Lib/Data";
+import { getAllBlogPosts } from "@/Lib/Data";
+import { SoftBackground, PageHead, Reveal, Journey, ChapterMark } from "@/components/Soft/Soft";
 
 export const dynamic = "force-dynamic";
 
@@ -9,30 +11,32 @@ export default async function BlogsPage() {
   const blogs = await getAllBlogPosts();
 
   return (
-    <>
-      {/* HERO */}
-      <section className="relative bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-        <div className="mx-auto max-w-7xl px-6 pt-20 pb-8 sm:pt-28 sm:pb-12">
-          <h1 className="mt-2 text-center text-4xl font-bold tracking-tight sm:mt-0 sm:text-6xl">
-            <span className="text-gray-900 dark:text-gray-100">Danh sách </span>
-            <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              Bài viết
-            </span>
-          </h1>
+    <main className="st-home st-page">
+      <SoftBackground />
+      <PageHead
+        label="~/blogs"
+        title="Danh sách"
+        accent="bài viết."
+        subtitle="Ghi chú về Deep Learning, NLP, LLMs và công nghệ — viết lại trong quá trình nghiên cứu."
+      >
+        <Link href="/search" className="st-btn ghost mt-2">
+          <FiSearch /> Tìm bài viết
+        </Link>
+      </PageHead>
 
-          <p className="mx-auto mt-6 max-w-2xl text-center text-lg text-gray-600 dark:text-gray-400">
-            Tổng hợp các bài viết và ghi chú về Deep Learning, NLP, LLMs và Công nghệ trong quá trình nghiên cứu.
-          </p>
-        </div>
-      </section>
+      <Reveal>
+        <Journey>
+          <section className="st-wrap st-section st-chapter pt-0 st-reveal">
+            <ChapterMark n="01" name="tất cả bài viết" note={`${blogs.length} ghi chép, mới nhất trước`} />
+            <BlogsList blogs={blogs} />
+          </section>
 
-      {/* GRID WITH PAGINATION */}
-      <main className="mx-auto max-w-[1400px] px-6 pb-20">
-        <BlogsList blogs={blogs} />
-      </main>
-
-      {/* INTERVIEW Q&A SECTION */}
-      <InterviewSection />
-    </>
+          <section className="st-wrap st-section st-chapter st-chapter-last pt-0 st-reveal">
+            <ChapterMark n="02" name="phỏng vấn" note="câu hỏi thật, trả lời gọn" final />
+            <InterviewSection />
+          </section>
+        </Journey>
+      </Reveal>
+    </main>
   );
 }

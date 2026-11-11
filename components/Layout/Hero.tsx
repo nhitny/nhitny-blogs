@@ -1,66 +1,84 @@
 "use client";
 
-// @ts-ignore
-import TechBackground from "@/components/Layout/TechBackground";
 import Link from "next/link";
-import { FiArrowRight, FiGithub, FiLinkedin, FiMail } from "react-icons/fi";
+import Image from "next/image";
+import { FiArrowRight, FiGithub, FiLinkedin, FiMail, FiSearch } from "react-icons/fi";
 
-export default function Hero() {
-    return (
-        <div className="relative overflow-hidden bg-white dark:bg-[#0A0A0A] transition-colors duration-300">
-            <TechBackground />
+export default function Hero({ postCount = 0, topicCount = 0 }: { postCount?: number; topicCount?: number }) {
+  return (
+    <div className="st-wrap st-hero !min-h-0 !pb-6">
+      <div className="grid w-full items-center gap-10 lg:grid-cols-12">
+        <div className="order-2 lg:order-1 lg:col-span-7">
+          <div className="st-kicker">
+            <span className="st-pulse" />
+            ~/nhitny-blog · a digital garden
+          </div>
 
-            <div className="relative z-10 mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
-                <div className="mx-auto max-w-2xl text-center">
-                    <div className="mb-6 inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-sm text-indigo-600 dark:text-indigo-300 backdrop-blur-sm">
-                        <span className="flex h-2 w-2 rounded-full bg-indigo-500 dark:bg-indigo-400 mr-2 animate-pulse"></span>
-                        Welcome to my digital garden
-                    </div>
+          <h1 className="st-title">
+            Ghi lại hành trình <em>AI, NLP</em> &amp; Tech
+            <span className="st-spark" aria-hidden="true">✦</span>
+          </h1>
 
-                    <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-6xl bg-clip-text text-transparent bg-gradient-to-b from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 drop-shadow-sm">
-                        Ghi lại hành trình <br />
-                        <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                            AI, NLP & Tech
-                        </span>
-                    </h1>
-                    <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
-                        Blog này là nơi mình lưu lại những kiến thức và trải nghiệm tìm hiểu được trong quá trình học tập. Mọi thứ là góc nhìn cá nhân và hành trình tự học, hy vọng sẽ giúp ích được cho bạn.
-                    </p>
-                    <div className="mt-10 flex items-center justify-center gap-x-6">
-                        <Link
-                            href="/blogs"
-                            className="group relative rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 hover:shadow-indigo-500/40 transition-all duration-300"
-                        >
-                            <span className="relative flex items-center gap-2">
-                                Khám phá bài viết
-                                <FiArrowRight className="transition-transform group-hover:translate-x-1" />
-                            </span>
-                        </Link>
-                        <Link
-                            href="/about"
-                            className="text-sm font-semibold leading-6 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-white transition-colors flex items-center gap-1"
-                        >
-                            Về tác giả
-                        </Link>
-                    </div>
+          <p className="st-lead">
+            Nơi mình lưu lại những gì học được trên đường nghiên cứu <b>NLP, RAG và LLMs</b> — góc nhìn
+            cá nhân, ghi chép tự học, hy vọng sẽ giúp ích được cho bạn.
+          </p>
 
-                    {/* Social Links */}
-                    <div className="mt-12 flex justify-center gap-8 text-gray-500 dark:text-gray-400">
-                        <a href="#" className="hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-110 transition-all duration-300">
-                            <FiGithub className="h-6 w-6" />
-                        </a>
-                        <a href="#" className="hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-110 transition-all duration-300">
-                            <FiLinkedin className="h-6 w-6" />
-                        </a>
-                        <a href="mailto:nhitny2802@gmail.com" className="hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-110 transition-all duration-300">
-                            <FiMail className="h-6 w-6" />
-                        </a>
-                    </div>
-                </div>
-            </div>
+          <div className="st-cta">
+            <Link href="/blogs" className="st-btn primary">
+              Khám phá bài viết <FiArrowRight />
+            </Link>
+            <Link href="/search" className="st-btn ghost">
+              <FiSearch /> Tìm kiếm
+            </Link>
+            <Link href="/about" className="st-btn ghost">
+              Về tác giả
+            </Link>
+          </div>
 
-            {/* Bottom fade - adjusted for light/dark */}
-            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white dark:from-[#0A0A0A] to-transparent z-10 pointer-events-none"></div>
+          <div className="mt-8 flex flex-wrap items-center gap-5 font-mono text-xs text-st-muted">
+            <span>
+              <b className="font-serif text-xl italic text-st-ink">{postCount}</b> bài viết
+            </span>
+            <span className="h-4 w-px bg-st-line" />
+            <span>
+              <b className="font-serif text-xl italic text-st-ink">{topicCount}</b> chủ đề
+            </span>
+            <span className="h-4 w-px bg-st-line" />
+            <span className="flex items-center gap-3 text-base">
+              <a href="https://github.com/nhitny" target="_blank" rel="noreferrer" aria-label="GitHub" className="hover:text-st-accent">
+                <FiGithub />
+              </a>
+              <a href="https://www.linkedin.com/in/nhitny2802/" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hover:text-st-accent">
+                <FiLinkedin />
+              </a>
+              <a href="mailto:nhitny.vn@gmail.com" aria-label="Email" className="hover:text-st-accent">
+                <FiMail />
+              </a>
+            </span>
+          </div>
         </div>
-    );
+
+        <div className="order-1 lg:order-2 lg:col-span-5">
+          <div className="st-avatar !w-[min(70%,300px)] lg:!w-[min(100%,400px)]">
+            <div className="st-avatar-ring" />
+            <div className="st-avatar-blob" />
+            <Image src="/chibi.webp" alt="Minh hoạ Yến Nhi" width={516} height={800} priority />
+            <span className="st-chip c1">
+              <i>●</i>RAG
+            </span>
+            <span className="st-chip c2">
+              <i>●</i>LLMs
+            </span>
+            <span className="st-chip c3">
+              <i>●</i>notes.md
+            </span>
+            <span className="st-chip c4">
+              <i>●</i>NLP
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

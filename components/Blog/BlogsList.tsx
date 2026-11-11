@@ -39,10 +39,8 @@ export default function BlogsList({ blogs }: BlogsListProps) {
                 <button
                     key={i}
                     onClick={() => handlePageChange(i)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === i
-                            ? "bg-indigo-600 text-white"
-                            : "bg-white text-gray-700 hover:bg-indigo-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                        }`}
+                    className={`st-page-btn${currentPage === i ? " is-current" : ""}`}
+                    aria-current={currentPage === i ? "page" : undefined}
                 >
                     {i}
                 </button>
@@ -55,9 +53,9 @@ export default function BlogsList({ blogs }: BlogsListProps) {
     return (
         <>
             {/* Blog Grid */}
-            <div className="grid grid-cols-1 gap-x-3 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-                {currentBlogs.map((b: any) => (
-                    <BlogHeader key={b.id} data={b} />
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {currentBlogs.map((b: any, i: number) => (
+                    <BlogHeader key={b.id} data={b} index={startIndex + i} />
                 ))}
             </div>
 
@@ -67,7 +65,7 @@ export default function BlogsList({ blogs }: BlogsListProps) {
                     <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="flex items-center gap-1 px-4 py-2 rounded-lg font-medium bg-white text-gray-700 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+                        className="st-page-btn"
                     >
                         <FiChevronLeft className="h-5 w-5" />
                         <span className="hidden sm:inline">Trước</span>
@@ -78,7 +76,7 @@ export default function BlogsList({ blogs }: BlogsListProps) {
                     <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className="flex items-center gap-1 px-4 py-2 rounded-lg font-medium bg-white text-gray-700 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+                        className="st-page-btn"
                     >
                         <span className="hidden sm:inline">Sau</span>
                         <FiChevronRight className="h-5 w-5" />

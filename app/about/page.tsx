@@ -1,134 +1,141 @@
-import TechBackground from "@/components/Layout/TechBackground";
-import { FiGithub, FiLinkedin, FiMail, FiCode, FiCpu, FiDatabase, FiAward } from "react-icons/fi";
 import Image from "next/image";
+import Link from "next/link";
+import { FiGithub, FiLinkedin, FiMail, FiArrowUpRight, FiArrowRight } from "react-icons/fi";
+import { SoftBackground, Reveal, Journey, ChapterMark } from "@/components/Soft/Soft";
+
+export const metadata = {
+  title: "Giới thiệu",
+  description: "Yến Nhi (Nhitny) — AI Engineer, nghiên cứu NLP, RAG và LLMs.",
+};
+
+const SKILLS = [
+  { group: "AI & NLP", items: ["PyTorch", "Transformers", "RAG pipelines", "LLM fine-tuning", "TensorFlow"] },
+  { group: "Data & ML", items: ["Python", "scikit-learn", "Pandas", "NumPy"] },
+  { group: "Build & Play", items: ["React / Next.js", "Firebase", "Docker", "Arduino / IoT", "Scratch"] },
+];
+
+const MILESTONES = [
+  { year: "2026", title: "Top 3 · VLSP 2026", desc: "Task 3 — Speech Quality Assessment." },
+  { year: "2025", title: "Paper DFAT @ VLSP 2025", desc: "Kết hợp đặc trưng âm thanh và văn bản để nhận diện cảm xúc trong giọng nói." },
+  { year: "2024", title: "Thạc sĩ KHMT @ UIT – VNU-HCM", desc: "Hướng nghiên cứu NLP, mô hình ngôn ngữ và generative AI." },
+  { year: "2023", title: "Kỹ sư CNTT @ ĐH Sài Gòn", desc: "Chương trình chất lượng cao." },
+];
 
 export default function AboutPage() {
-  const skills = [
-    { name: "Python", category: "Language", icon: <FiCode /> },
-    { name: "PyTorch", category: "AI/ML", icon: <FiCpu /> },
-    { name: "Transformers", category: "NLP", icon: <FiCpu /> },
-    { name: "LLMs / RAG", category: "AI Research", icon: <FiDatabase /> },
-    { name: "React / Next.js", category: "Web", icon: <FiCode /> },
-    { name: "Arduino / IoT", category: "Hardware", icon: <FiCpu /> },
-  ];
-
   return (
-    <main className="min-h-screen bg-white dark:bg-gray-950">
-      {/* Header Section */}
-      <section className="relative overflow-hidden py-20 sm:py-32 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-        <div className="absolute inset-0 z-0 opacity-50 dark:opacity-60 pointer-events-none">
-          <TechBackground />
-        </div>
+    <main className="st-home st-page">
+      <SoftBackground />
 
-        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-6xl">
-              Xin chào, mình là <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">Nhitny</span>
+      {/* ---------- intro ---------- */}
+      <section className="st-wrap st-page-head">
+        <div className="grid items-center gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <span className="st-label">~/about</span>
+            <h1 className="st-page-title">
+              Xin chào, mình là <em>Yến Nhi.</em>
             </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
-              AI Engineer | NLP & RAG Specialist | Tech Enthusiast
+            <p className="st-lead !max-w-xl">
+              <b>AI Engineer</b> và học viên thạc sĩ Khoa học Máy tính tại <b>UIT – VNU-HCM</b>. Mình mê cách máy
+              móc hiểu ngôn ngữ — từ <b>NLP, RAG</b> đến <b>LLMs</b> — và blog này là nơi mình ghi lại hành trình đó.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Bio Section */}
-      <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
-          <div className="relative aspect-square w-full max-w-md mx-auto overflow-hidden rounded-2xl shadow-xl lg:max-w-none">
-            {/* Placeholder for author image - using a tech/code abstract image if no personal photo available */}
-            {/* Ideally replace this with a real author photo */}
-            <div className="h-full w-full bg-indigo-100 dark:bg-indigo-900/20 flex items-center justify-center">
-              <span className="text-6xl">👩‍💻</span>
+            <div className="st-cta">
+              <a href="https://nhitny.github.io" target="_blank" rel="noreferrer" className="st-btn primary">
+                Xem portfolio <FiArrowUpRight />
+              </a>
+              <a href="https://github.com/nhitny" target="_blank" rel="noreferrer" className="st-btn ghost">
+                <FiGithub /> GitHub
+              </a>
+              <a href="https://www.linkedin.com/in/nhitny2802/" target="_blank" rel="noreferrer" className="st-btn ghost">
+                <FiLinkedin /> LinkedIn
+              </a>
+              <a href="mailto:nhitny.vn@gmail.com" className="st-btn ghost">
+                <FiMail /> Email
+              </a>
             </div>
           </div>
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl">
-              Về bản thân
-            </h2>
-            <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-400">
-              Chào bạn! Mình là một kỹ sư đam mê trí tuệ nhân tạo, đặc biệt là NLP và các mô hình ngôn ngữ lớn (LLMs). Blog này là nơi mình ghi lại hành trình học tập, nghiên cứu và những kiến thức thú vị mình tìm hiểu được.
-            </p>
-            <p className="mt-4 text-lg leading-8 text-gray-600 dark:text-gray-400">
-              Mình tin rằng kiến thức là một hành trình dài. Tại đây, mình chia sẻ những gì mình đúc kết được về Deep Learning, RAG, LLM và công nghệ, với hy vọng có thể cùng giao lưu và học hỏi thêm từ cộng đồng.
-            </p>
-            <div className="mt-8 flex gap-4">
-              <a
-                href="https://github.com/nhitny"
-                className="flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
-              >
-                <FiGithub className="h-5 w-5" /> GitHub
-              </a>
-              <a
-                href="#"
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
-              >
-                <FiLinkedin className="h-5 w-5" /> LinkedIn
-              </a>
-              <a
-                href="mailto:nhitny2802@gmail.com"
-                className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500"
-              >
-                <FiMail className="h-5 w-5" /> Email
-              </a>
+          <div className="lg:col-span-5">
+            <div className="st-avatar !w-[min(70%,300px)] lg:!w-[min(100%,380px)]">
+              <div className="st-avatar-ring" />
+              <div className="st-avatar-blob" />
+              <Image src="/chibi.webp" alt="Minh hoạ Yến Nhi" width={516} height={800} priority />
+              <span className="st-chip c1"><i>●</i>NLP</span>
+              <span className="st-chip c2"><i>●</i>speech</span>
+              <span className="st-chip c4"><i>●</i>RAG</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Skills Section */}
-      <section className="bg-gray-50 py-16 dark:bg-gray-900">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl mb-12">
-            Kỹ năng & Công nghệ
-          </h2>
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
-            {skills.map((skill, index) => {
-              // Chọn animation ngẫu nhiên để tạo hiệu ứng không đồng đều
-              const animations = [
-                "animate-float",
-                "animate-float-delayed",
-                "animate-float-slow"
-              ];
-              const animationClass = animations[index % animations.length];
-
-              // Gradient viền màu mè
-              const gradients = [
-                "from-blue-400 to-indigo-500",
-                "from-purple-400 to-pink-500",
-                "from-green-400 to-emerald-500",
-                "from-orange-400 to-red-500",
-                "from-cyan-400 to-blue-500",
-                "from-yellow-400 to-orange-500"
-              ];
-              const gradientClass = gradients[index % gradients.length];
-
-              return (
-                <div
-                  key={skill.name}
-                  className={`relative group flex flex-col items-center justify-center rounded-xl bg-white p-6 shadow-sm transition-all hover:scale-110 hover:shadow-xl dark:bg-gray-800 ${animationClass}`}
-                >
-                  {/* Viền gradient ẩn, hiện khi hover */}
-                  <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${gradientClass} opacity-0 transition-opacity duration-300 group-hover:opacity-10 -z-10`}></div>
-                  <div className={`absolute -inset-[1px] rounded-xl bg-gradient-to-br ${gradientClass} opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-20 blur-sm`}></div>
-
-                  <div className={`mb-4 text-4xl transition-transform duration-300 group-hover:rotate-12 bg-gradient-to-br ${gradientClass} bg-clip-text text-transparent`}>
-                    <span className="text-gray-800 dark:text-white group-hover:text-transparent transition-colors duration-300">
-                      {skill.icon}
-                    </span>
+      <Reveal>
+        <Journey>
+          {/* ---------- 01 why ---------- */}
+          <section className="st-wrap st-section st-chapter pt-0 st-reveal">
+            <ChapterMark n="01" name="vì sao có blog này" note="kiến thức là một hành trình dài" />
+            <div className="grid gap-10 lg:grid-cols-2">
+              <div>
+                <h2 className="st-h2">
+                  Viết để <em>hiểu</em>, chia sẻ để <em>nhớ</em>.
+                </h2>
+                <p className="st-body">
+                  Mỗi bài ở đây là một lần mình ngồi gỡ rối một khái niệm — reranker trong RAG, ensemble learning,
+                  attention… — rồi viết lại bằng ngôn ngữ của mình. Nếu nó giúp được ai đó hiểu nhanh hơn một chút, thế
+                  là vui rồi.
+                </p>
+                <p className="st-body">
+                  Mọi thứ là góc nhìn cá nhân trong quá trình tự học, nên rất mong nhận được góp ý của bạn.
+                </p>
+              </div>
+              <div className="grid gap-5">
+                {SKILLS.map(({ group, items }) => (
+                  <div key={group} className="st-tool-group">
+                    <h4>{group}</h4>
+                    <div className="st-tags">
+                      {items.map((name) => (
+                        <span key={name} className="st-tag">
+                          {name}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900 group-hover:scale-105 transition-transform dark:text-gray-100">
-                    {skill.name}
-                  </h3>
-                  <span className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-                    {skill.category}
-                  </span>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ---------- 02 milestones ---------- */}
+          <section className="st-wrap st-section st-chapter pt-0 st-reveal">
+            <ChapterMark n="02" name="cột mốc" note="vài điểm dừng trên đường" />
+            <div className="grid gap-4 md:grid-cols-2">
+              {MILESTONES.map((m) => (
+                <div key={m.title} className="st-card p-6">
+                  <span className="font-serif text-3xl italic text-st-accent">{m.year}</span>
+                  <h3 className="mt-2 font-serif text-xl font-medium text-st-ink">{m.title}</h3>
+                  <p className="mt-1 text-st-muted">{m.desc}</p>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+              ))}
+            </div>
+          </section>
+
+          {/* ---------- 03 say hi ---------- */}
+          <section className="st-wrap st-section st-chapter st-chapter-last pt-0 st-reveal">
+            <ChapterMark n="03" name="trò chuyện" note="mình luôn vui khi nghe từ bạn" final />
+            <div className="st-connect">
+              <h2 className="st-h2">
+                Cùng nói chuyện về <em>AI</em> nhé.
+              </h2>
+              <p className="st-body mx-auto max-w-lg">Góp ý bài viết, hỏi han, hay chỉ muốn chào — email luôn mở.</p>
+              <div className="st-socials">
+                <a href="mailto:nhitny.vn@gmail.com" className="st-social">
+                  <FiMail /> nhitny.vn@gmail.com
+                </a>
+                <Link href="/blogs" className="st-social">
+                  Đọc bài viết <FiArrowRight />
+                </Link>
+              </div>
+            </div>
+          </section>
+        </Journey>
+      </Reveal>
     </main>
   );
 }
