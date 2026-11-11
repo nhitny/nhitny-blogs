@@ -1,64 +1,116 @@
 rules_version = '2';
 
+// Firestore security rules for nhitny-blogs.
+// Deploy with:  firebase deploy --only firestore:rules
+// (or paste into Firebase Console → Firestore → Rules → Publish)
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ---------- helpers ----------
     function isSignedIn() {
       return request.auth != null;
     }
 
+    // Admin = users/{uid}.role == "admin". That document can only be
+    // changed from the Firebase Console (clients can never write /users).
     function isAdmin() {
       return isSignedIn() &&
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("role", "") == "admin";
     }
 
-    // POSTS (top-level)
+    function changedOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    function changedBy(field, delta) {
+      return request.resource.data.get(field, 0) == resource.data.get(field, 0) + delta;
+    }
+
+    // A post is public when published, or when its scheduled time has passed.
+    function postIsPublic(post) {
+      return post.get('isPublished', false) == true ||
+        (post.get('scheduledAt', null) != null && post.scheduledAt <= request.time);
+    }
+
+    // ---------- posts ----------
     match /posts/{postId} {
-      // Allow public read for all posts
-      // (Client-side filtering will show only published/scheduled posts)
-      allow read: if true;
+      // Drafts are only visible to the admin.
+      allow read: if postIsPublic(resource.data) || isAdmin();
 
-      // Only admin can write (create/delete)
       allow create, delete: if isAdmin();
-      
-      // Allow update for incrementing views/likes/commentsCount OR if admin
-      // (Order changed to prevent isAdmin crash from blocking valid counter updates)
-      allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'commentsCount']))
-                    || isAdmin();
 
-      // COMMENTS (Sub-collection)
+      allow update: if isAdmin()
+        // anyone reading the post may add exactly one view
+        || (postIsPublic(resource.data) && changedOnly(['views']) && changedBy('views', 1))
+        // signed-in readers may like / unlike (±1) …
+        || (isSignedIn() && postIsPublic(resource.data) && changedOnly(['likes'])
+            && (changedBy('likes', 1) || changedBy('likes', -1)))
+        // … and the comment counter follows comment create / delete (±1)
+        || (isSignedIn() && postIsPublic(resource.data) && changedOnly(['commentsCount'])
+            && (changedBy('commentsCount', 1) || changedBy('commentsCount', -1)));
+
+      // ---------- comments ----------
       match /comments/{commentId} {
         allow read: if true;
-        allow create: if isSignedIn();
-        allow update, delete: if isAdmin() ||
-          (isSignedIn() && request.auth.uid == resource.data.userId);
+        allow create: if isSignedIn()
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.content is string
+          && request.resource.data.content.size() > 0
+          && request.resource.data.content.size() <= 3000;
+        allow update: if isSignedIn()
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.userId == request.auth.uid
+          && changedOnly(['content'])
+          && request.resource.data.content is string
+          && request.resource.data.content.size() <= 3000;
+        allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       }
     }
 
-    // COMMENTS (top-level) - Keep for backward compatibility if needed, or remove
+    // ---------- legacy top-level comments (kept read-only) ----------
     match /comments/{commentId} {
       allow read: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin() ||
-        (isSignedIn() && request.auth.uid == resource.data.userId); // Changed uid to userId to match code
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create, update: if false;
     }
 
-    // LIKES (top-level)
+    // ---------- likes ----------
     match /likes/{likeId} {
       allow read: if true;
-      allow create: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.postId is string;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow update: if false;
     }
 
-    // TOPICS
+    // ---------- interview Q&A ----------
+    match /interview_qna/{questionId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (changedOnly(['views']) && changedBy('views', 1));
+    }
+
+    // ---------- site settings (e.g. interview page visibility) ----------
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---------- topics ----------
     match /topics/{topicId} {
       allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // USERS
+    // ---------- users ----------
+    // Read your own profile (used to check admin role). No client writes:
+    // roles are managed in the Firebase Console only.
     match /users/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow write: if false;
     }
   }
 }

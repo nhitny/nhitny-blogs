@@ -6,8 +6,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://nhitny-blogs.vercel.app'
 
     const blogUrls = posts.map((post) => ({
-        url: `${baseUrl}/blogs/${post.id}`,
-        lastModified: new Date(post.createdAt?.seconds * 1000 || Date.now()),
+        url: `${baseUrl}/blogs/${post.slug || post.id}`,
+        lastModified: new Date(post.updatedAt || post.date || post.createdAt || Date.now()),
         changeFrequency: 'weekly' as const,
         priority: 0.8,
     }))

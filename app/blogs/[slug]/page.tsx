@@ -2,7 +2,7 @@
 
 import { use } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { fetchPostBySlug } from "@/Lib/postQueries";
 import { db } from "@/firebase/firebaseConfig";
 import LikeBtn from "@/components/Blog/LikeBtn";
 import Comments from "@/components/Blog/Comments";
@@ -77,21 +77,19 @@ export default function BlogSlugPage({
     if (!slug) return;
     (async () => {
       try {
-        // Fetch by slug first, then check publish rules client-side
-        // This avoids complex OR rules in Firestore indexes for single document lookup
-        const q = query(
-          collection(db, "posts"),
-          where("slug", "==", slug)
-        );
-        const snap = await getDocs(q);
+        // visibility is enforced by Firestore rules; the helper only asks for what may be read
+        const found = await fetchPostBySlug(slug);
 
-        if (!snap.empty) {
-          const data = snap.docs[0].data();
+        if (found) {
+          const data = found.data();
+          const snap = { docs: [found] };
           const now = new Date();
           const isPublished = data.isPublished;
-          const isScheduledPassed = data.scheduledAt && data.scheduledAt.toDate() <= now;
+          const isScheduledPassed = data.scheduledAt?.toDate && data.scheduledAt.toDate() <= now;
+          // an admin previewing a draft can also read it
+          const isPreview = !isPublished && !isScheduledPassed;
 
-          if (isPublished || isScheduledPassed) {
+          if (isPublished || isScheduledPassed || isPreview) {
             // Include Firestore ID in the post state
             setPost({ ...data, id: snap.docs[0].id });
             setStatus("ready");
@@ -101,8 +99,8 @@ export default function BlogSlugPage({
             setContentHtml(html);
             setHeadings(headings);
 
-            // Increment view count
-            try {
+            // Increment view count (skip for draft previews)
+            if (!isPreview) try {
               const { updateDoc, doc: firestoreDoc, increment } = await import("firebase/firestore");
               await updateDoc(firestoreDoc(db, "posts", snap.docs[0].id), {
                 views: increment(1)

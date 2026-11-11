@@ -32,18 +32,10 @@ export default function LikeBtn({ postId }: { postId: string }) {
     }
     await load();
 
-    // Update likes count in post document
+    // keep the counter on the post document in sync (rules allow exactly ±1)
     try {
-      const { updateDoc, doc: firestoreDoc, collection: firestoreCollection, query: firestoreQuery, where: firestoreWhere, getDocs: firestoreGetDocs } = await import("firebase/firestore");
-      const postsRef = firestoreCollection(db, "posts");
-      const q = firestoreQuery(postsRef, firestoreWhere("slug", "==", postId));
-      const postSnap = await firestoreGetDocs(q);
-      if (!postSnap.empty) {
-        const postDoc = postSnap.docs[0];
-        await updateDoc(firestoreDoc(db, "posts", postDoc.id), {
-          likes: totalLikes + (hasUserLiked ? -1 : 1)
-        });
-      }
+      const { updateDoc, doc: firestoreDoc, increment } = await import("firebase/firestore");
+      await updateDoc(firestoreDoc(db, "posts", postId), { likes: increment(hasUserLiked ? -1 : 1) });
     } catch (err) {
       console.error("Error updating post likes count:", err);
     }

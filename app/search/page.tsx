@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, Suspense } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/firebase/firebaseConfig";
+import { fetchPublicPostDocs } from "@/Lib/postQueries";
 import Link from "next/link";
 import { FiSearch, FiArrowRight, FiX } from "react-icons/fi";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -46,8 +45,8 @@ function SearchContent() {
   useEffect(() => {
     const loadPosts = async () => {
       try {
-        const snapshot = await getDocs(collection(db, "posts"));
-        const posts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Post[];
+        const docs = await fetchPublicPostDocs();
+        const posts = docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Post[];
         setAllPosts(posts.filter(isVisible));
       } catch (error) {
         console.error("Error loading posts:", error);
